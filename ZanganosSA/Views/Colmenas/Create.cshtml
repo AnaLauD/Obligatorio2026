@@ -1,0 +1,73 @@
+@model ZanganosSA.Models.Colmena
+
+@{
+    ViewData["Title"] = "Nueva Colmena";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-plus-circle text-warning"></i> Nueva Colmena</h2>
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="Id" class="form-label fw-bold">Id Colmena</label>
+                    <input asp-for="Id" class="form-control" type="number" placeholder="Ej: 108" required />
+                    <span asp-validation-for="Id" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ApiarioId" class="form-label fw-bold">Apiario (Depto)</label>
+                    <select asp-for="ApiarioId" class="form-select" asp-items="ViewBag.ApiarioId" required>
+                        <option value="">-- Seleccionar apiario --</option>
+                    </select>
+                    <span asp-validation-for="ApiarioId" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="TipoCaja" class="form-label fw-bold">Tipo de Caja</label>
+                    <input asp-for="TipoCaja" class="form-control" placeholder="Ej: Langstroth, Cuadro" />
+                    <span asp-validation-for="TipoCaja" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="EstadoColmena" class="form-label fw-bold">Estado de Colmena</label>
+                    <select asp-for="EstadoColmena" class="form-select">
+                        <option value="">-- Seleccionar estado --</option>
+                        <option>Fuerte</option>
+                        <option>Media</option>
+                        <option>Debil</option>
+                        <option>Critica</option>
+                    </select>
+                    <span asp-validation-for="EstadoColmena" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ReinaEstado" class="form-label fw-bold">Estado de Reina</label>
+                    <select asp-for="ReinaEstado" class="form-select">
+                        <option value="">-- Seleccionar estado --</option>
+                        <option>Sana</option>
+                        <option>Joven</option>
+                        <option>Vieja</option>
+                        <option>Ausente</option>
+                        <option>Reemplazada</option>
+                    </select>
+                    <span asp-validation-for="ReinaEstado" class="text-danger small"></span>
+                </div>
+                <div class="mb-3 form-check form-switch ms-1">
+                    <input class="form-check-input" type="checkbox" asp-for="Activa" checked />
+                    <label class="form-check-label fw-bold" asp-for="Activa">Colmena Activa</label>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Observaciones" class="form-label fw-bold">Observaciones</label>
+                    <textarea asp-for="Observaciones" class="form-control" rows="3" placeholder="Ingresa comentarios adicionales..."></textarea>
+                    <span asp-validation-for="Observaciones" class="text-danger small"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save"></i> Guardar</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

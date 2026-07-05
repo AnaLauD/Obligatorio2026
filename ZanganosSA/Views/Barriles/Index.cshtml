@@ -1,0 +1,74 @@
+@model IEnumerable<ZanganosSA.Models.Barril>
+
+@{
+    ViewData["Title"] = "Barriles de Exportación";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1><i class="bi bi-droplet-fill text-primary"></i> Barriles de Exportación</h1>
+    <a asp-action="Create" class="btn btn-warning fw-bold"><i class="bi bi-plus-circle"></i> Nuevo Barril</a>
+</div>
+
+<div class="table-responsive">
+<table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Id Barril</th>
+                    <th>Cosecha Lote</th>
+                    <th>Peso (kg)</th>
+                    <th>Estado</th>
+                    <th>Destino</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>#@item.Id</strong></td>
+                        <td>@item.Cosecha?.Lote (Cosecha #@item.CosechaId)</td>
+                        <td>@item.PesoKg kg</td>
+                        <td>
+                            @{
+                                string badgeClass = item.Estado == "Exportado" ? "bg-success" : (item.Estado == "Reservado" ? "bg-warning text-dark" : "bg-info text-white");
+                            }
+                            <span class="badge @badgeClass">@item.Estado</span>
+                        </td>
+                        <td>@item.Destino</td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning me-1"><i class="bi bi-pencil"></i> Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i> Detalles</a>
+                            <a asp-action="Trazabilidad" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-qr-code"></i> Trazabilidad</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+</table>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div>
+        <span class="text-muted small">Página @ViewBag.CurrentPage de @(ViewBag.TotalPages == 0 ? 1 : ViewBag.TotalPages)</span>
+    </div>
+    <div class="d-flex gap-2">
+        @if (ViewBag.HasPreviousPage)
+        {
+            <a href="?page=@(ViewBag.CurrentPage - 1)" class="btn-paginado-dorado"><i class="bi bi-arrow-left"></i> Anterior</a>
+        }
+        else
+        {
+            <span class="btn-paginado-dorado disabled"><i class="bi bi-arrow-left"></i> Anterior</span>
+        }
+
+        @if (ViewBag.HasNextPage)
+        {
+            <a href="?page=@(ViewBag.CurrentPage + 1)" class="btn-paginado-dorado">Siguiente <i class="bi bi-arrow-right"></i></a>
+        }
+        else
+        {
+            <span class="btn-paginado-dorado disabled">Siguiente <i class="bi bi-arrow-right"></i></span>
+        }
+    </div>
+</div>
+

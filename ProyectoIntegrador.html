@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Proyecto Integrador - Zánganos SA | Obligatorio 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --gold: #f59e0b;
+            --gold-light: #fcd34d;
+            --blue: #3b82f6;
+            --blue-light: #60a5fa;
+            --green: #10b981;
+            --red: #ef4444;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #253147;
+            --border: rgba(255,255,255,0.08);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ── COVER PAGE ── */
+        .cover {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, #1e3a5f 0%, #0f172a 70%);
+            padding: 60px 24px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%);
+            top: -200px; left: -200px;
+        }
+        .cover::after {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%);
+            bottom: -100px; right: -100px;
+        }
+        .cover-badge {
+            display: inline-block;
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.4);
+            color: var(--gold-light);
+            padding: 6px 20px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+        .cover h1 {
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 30%, var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .cover-subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            max-width: 640px;
+            margin: 0 auto 36px;
+        }
+        .cover-cards {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 48px;
+        }
+        .cover-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 22px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .cover-card span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .cover-authors {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .author-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 8px 20px;
+        }
+        .author-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 13px; color: #0f172a;
+        }
+
+        /* ── LAYOUT ── */
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 32px 20px;
+        }
+        .sidebar h3 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted);
+            margin-bottom: 16px;
+            margin-top: 24px;
+            padding-left: 8px;
+        }
+        .sidebar h3:first-child { margin-top: 0; }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(245,158,11,0.1);
+            color: var(--gold-light);
+        }
+        .sidebar a .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--muted);
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover .dot, .sidebar a.active .dot {
+            background: var(--gold);
+        }
+
+        /* ── MAIN CONTENT ── */
+        main {
+            padding: 56px 64px;
+            max-width: 900px;
+        }
+
+        /* ── SECTIONS ── */
+        .section {
+            margin-bottom: 72px;
+            scroll-margin-top: 32px;
+        }
+        .section-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        .section h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        .section h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--blue-light);
+            margin: 32px 0 12px;
+        }
+        .section p {
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 56px 0;
+        }
+
+        /* ── CARD GRID ── */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .card-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .card h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+        /* ── PROBLEM CARDS ── */
+        .problem-card {
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-left: 3px solid var(--red);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+        }
+        .problem-card h4 { font-size: 14px; font-weight: 700; color: #fca5a5; margin-bottom: 6px; }
+        .problem-card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+        /* ── INFO BOX ── */
+        .info-box {
+            background: rgba(59,130,246,0.07);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-left: 3px solid var(--blue);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .info-box p { font-size: 13px; color: var(--muted); margin: 0; }
+
+        .gold-box {
+            background: rgba(245,158,11,0.07);
+            border: 1px solid rgba(245,158,11,0.2);
+            border-left: 3px solid var(--gold);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .gold-box p { font-size: 13px; color: var(--muted); margin: 0; }
+
+        /* ── TABLE ── */
+        .table-wrap { overflow-x: auto; margin: 16px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--surface2); color: var(--blue-light); font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--muted); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* ── BADGE ── */
+        .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 100px; }
+        .badge-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-yellow { background: rgba(245,158,11,0.15); color: var(--gold-light); border: 1px solid rgba(245,158,11,0.3); }
+        .badge-green { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+
+        /* ── SPRINT TIMELINE ── */
+        .sprint-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .sprint-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .sprint-num {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 6px;
+        }
+        .sprint-card h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .sprint-card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+        /* ── LIST ── */
+        ul.styled, ol.styled { padding-left: 20px; margin: 10px 0; }
+        ul.styled li, ol.styled li { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+        ul.styled li::marker { color: var(--gold); }
+
+        /* ── TEAM ── */
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 16px 0; }
+        .team-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .team-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 800; color: #0f172a;
+            margin: 0 auto 12px;
+        }
+        .team-card h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .team-card .role { font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+        .team-card p { font-size: 12px; color: var(--muted); margin: 0; }
+
+        /* ── PRINT ── */
+        @media print {
+            .sidebar { display: none; }
+            .layout { display: block; }
+            main { padding: 20px; }
+        }
+        @media (max-width: 768px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            main { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+    <div class="cover-badge">📄 Obligatorio Académico · 2026</div>
+    <h1>Sistema de Gestión Apícola<br/>Integral · Zánganos SA</h1>
+    <p class="cover-subtitle">
+        Documentación integradora de <strong>Ingeniería de Software</strong>,
+        <strong>Programación 3</strong> y <strong>Base de Datos 2</strong>.
+        Universidad ORT Uruguay.
+    </p>
+    <div class="cover-cards">
+        <div class="cover-card"><span>Cliente</span>Zánganos SA — Matías</div>
+        <div class="cover-card"><span>Ubicación</span>San José, Uruguay</div>
+        <div class="cover-card"><span>Año</span>2026</div>
+        <div class="cover-card"><span>Metodología</span>Scrum · 4 Sprints</div>
+        <div class="cover-card"><span>Tecnología</span>ASP.NET 9 · SQL Server</div>
+    </div>
+    <div class="cover-authors">
+        <div class="author-pill">
+            <div class="author-avatar">A</div>
+            Ana Laura Damasco Lain
+        </div>
+        <div class="author-pill">
+            <div class="author-avatar">M</div>
+            Micaela Roca
+        </div>
+    </div>
+</div>
+
+<!-- CUERPO -->
+<div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <h3>Introducción</h3>
+        <a href="#resumen" class="active"><span class="dot"></span>Resumen</a>
+        <a href="#cliente"><span class="dot"></span>El Cliente</a>
+        <a href="#problema"><span class="dot"></span>Análisis del Problema</a>
+        <a href="#contexto"><span class="dot"></span>Contexto Apícola</a>
+
+        <h3>Requerimientos</h3>
+        <a href="#ia"><span class="dot"></span>Módulos de IA</a>
+        <a href="#funcionales"><span class="dot"></span>Requerimientos</a>
+
+        <h3>Proyecto</h3>
+        <a href="#metodologia"><span class="dot"></span>Metodología</a>
+        <a href="#factibilidad"><span class="dot"></span>Factibilidad</a>
+        <a href="#equipo"><span class="dot"></span>Equipo y Roles</a>
+        <a href="#sqa"><span class="dot"></span>Plan SQA</a>
+        <a href="#testing"><span class="dot"></span>Plan de Testing</a>
+        <a href="#scm"><span class="dot"></span>Control de Versiones</a>
+        <a href="#capacitacion"><span class="dot"></span>Capacitación</a>
+        <a href="#sprints"><span class="dot"></span>Sprints e Hitos</a>
+        <a href="#riesgos"><span class="dot"></span>Riesgos</a>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main>
+
+        <!-- SECCIÓN 1: RESUMEN -->
+        <section class="section" id="resumen">
+            <span class="section-tag">01 · Introducción</span>
+            <h2>Resumen del Proyecto</h2>
+            <p>
+                El presente documento describe el proceso completo de análisis, diseño y desarrollo del
+                <strong>Sistema de Gestión Apícola Integral (SGAI)</strong> para la empresa <strong>Zánganos SA</strong>,
+                un emprendimiento apícola uruguayo orientado a la producción y exportación de miel.
+            </p>
+            <p>
+                Este obligatorio integra las asignaturas de <strong>Ingeniería de Software</strong>,
+                <strong>Programación 3</strong> y <strong>Base de Datos 2</strong>, conectando el análisis
+                riguroso de requerimientos con su implementación técnica en .NET 9 y SQL Server.
+            </p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <h4>Ingeniería de Software</h4>
+                    <p>Relevamiento, análisis de requerimientos, métricas de calidad, SQA y diseño arquitectónico.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💻</div>
+                    <h4>Programación 3</h4>
+                    <p>Lógica orientada a objetos en ASP.NET Core MVC, algoritmos e integración con IA.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🗄️</div>
+                    <h4>Base de Datos 2</h4>
+                    <p>Modelado relacional en SQL Server, restricciones, índices, triggers y stored procedures.</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <p>
+                    <strong>Objetivo principal:</strong> Digitalizar y centralizar toda la operación apícola de Matías,
+                    pasando de anotaciones manuales y gestión memorística a una plataforma web inteligente con
+                    asistente de voz y visión computacional.
+                </p>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 2: EL CLIENTE -->
+        <section class="section" id="cliente">
+            <span class="section-tag">02 · El Cliente</span>
+            <h2>Presentación del Cliente<br/>— Matías, Apicultor</h2>
+            <p>
+                El cliente es <strong>Matías</strong>, productor apícola autónomo y propietario de
+                <strong>Zánganos SA</strong>, ubicada en el departamento de <strong>San José, Uruguay</strong>.
+                Matías lleva adelante la empresa de forma individual, gestionando múltiples apiarios,
+                colmenas y el proceso completo de exportación de miel.
+            </p>
+
+            <h3>Perfil del cliente</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Atributo</th><th>Detalle</th></tr>
+                    <tr><td>Entidad</td><td>Zánganos SA</td></tr>
+                    <tr><td>Stakeholder principal</td><td>Matías (productor autónomo y administrador único)</td></tr>
+                    <tr><td>Ubicación</td><td>San José, Uruguay</td></tr>
+                    <tr><td>Modelo de negocio</td><td>Producción primaria de miel y cera con foco en exportación internacional directa</td></tr>
+                    <tr><td>Apiarios actuales</td><td>4 apiarios distribuidos en Colonia, San José, Canelones y Flores</td></tr>
+                    <tr><td>Colmenas totales</td><td>7 colmenas activas registradas en el sistema</td></tr>
+                    <tr><td>Destinos de exportación</td><td>Argentina, Alemania, Estados Unidos, Japón</td></tr>
+                    <tr><td>Sistema actual</td><td>Ninguno — gestión basada en memoria y cuadernos de notas</td></tr>
+                    <tr><td>Infraestructura tecnológica</td><td>Computadora de escritorio en domicilio y smartphone en el campo</td></tr>
+                </table>
+            </div>
+
+            <h3>El día a día de Matías en el apiario</h3>
+            <p>
+                Matías trabaja en condiciones exigentes: visita los apiarios con traje protector completo, guantes gruesos
+                y máscara, lo que le impide operar con comodidad dispositivos táctiles. Las inspecciones de colmenas
+                se realizan en zonas rurales con conectividad móvil limitada, y la información relevada
+                (estado de la reina, observaciones sanitarias, población estimada) se pierde o queda
+                anotada en papeles que luego son difíciles de consultar.
+            </p>
+            <p>
+                El proceso de cosecha, envasado en barriles y exportación no tiene ningún sistema que lo vincule
+                con las colmenas de origen, lo que impide rastrear la calidad de un lote si surge alguna
+                observación del comprador internacional.
+            </p>
+
+            <div class="gold-box">
+                <p>
+                    💡 <strong>Necesidad central del cliente:</strong> Matías necesita una herramienta que pueda usar
+                    <em>con los guantes puestos</em>, que registre lo que él dice en voz alta durante la inspección
+                    y que guarde automáticamente el estado de cada colmena en la base de datos. Todo sin que él
+                    tenga que tocar una pantalla.
+                </p>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 3: EL PROBLEMA -->
+        <section class="section" id="problema">
+            <span class="section-tag">03 · Análisis del Problema</span>
+            <h2>Análisis de Brechas<br/>(Situación Actual vs. Deseada)</h2>
+            <p>
+                Luego de las entrevistas con Matías, se identificaron cinco brechas críticas que justifican
+                el desarrollo de la solución:
+            </p>
+
+            <div class="problem-card">
+                <h4>A. Quiebre de Trazabilidad en la Producción</h4>
+                <p>
+                    No existe vínculo entre la colmena productora y el barril exportado. Si Alemania reporta
+                    un problema en un lote de miel, es imposible identificar de qué colmena provino.
+                    Esto representa un riesgo legal y comercial grave para las exportaciones.
+                </p>
+            </div>
+
+            <div class="problem-card">
+                <h4>B. Gestión Reactiva de Activos Biológicos</h4>
+                <p>
+                    La salud de las colmenas se atiende solo cuando el problema ya es visible.
+                    No hay alertas de tratamientos vencidos ni seguimiento del estado de la reina.
+                    Esto provoca pérdidas de colonias enteras por enjambrazón o colapso de colonia.
+                </p>
+            </div>
+
+            <div class="problem-card">
+                <h4>C. Ausencia de Control Financiero Operativo</h4>
+                <p>
+                    Matías desconoce el costo real por colmena. Los gastos de alimentación suplementaria,
+                    medicamentos veterinarios y mantenimiento de cajones no se registran ni se contrastan
+                    contra los ingresos de exportación, haciendo imposible calcular la rentabilidad real.
+                </p>
+            </div>
+
+            <div class="problem-card">
+                <h4>D. Incumplimiento Normativo Potencial (MGAP)</h4>
+                <p>
+                    El Ministerio de Ganadería, Agricultura y Pesca (MGAP) exige a los apicultores declarar
+                    la ubicación exacta (latitud/longitud y seccional policial) de sus apiarios.
+                    Matías lleva esta información dispersa y sin estructura formal, lo que podría derivar
+                    en sanciones administrativas.
+                </p>
+            </div>
+
+            <div class="problem-card">
+                <h4>E. Sin Capacidad de Planificación Predictiva</h4>
+                <p>
+                    Sin datos históricos digitalizados, Matías no puede estimar la cosecha futura,
+                    planificar la logística de exportación ni anticiparse a los ciclos de producción.
+                    Las decisiones se toman de forma intuitiva, incrementando el riesgo financiero.
+                </p>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 4: CONTEXTO APÍCOLA -->
+        <section class="section" id="contexto">
+            <span class="section-tag">04 · Contexto</span>
+            <h2>Contexto Apícola del Proyecto</h2>
+            <p>
+                Uruguay es el quinto exportador mundial de miel per cápita. El sector apícola representa
+                una fuente de ingresos importante para productores familiares como Matías, con mercados
+                de exportación en Europa, Asia y América. Sin embargo, la escala pequeña de estos
+                productores hace que la inversión en sistemas de gestión sea infrecuente, dejando el
+                sector sin digitalizar.
+            </p>
+            <h3>Estructura de la cadena productiva</h3>
+            <div class="gold-box">
+                <p>
+                    <strong>Apiario (campo)</strong> → Colmenas individuales → Inspección y control sanitario
+                    → Cosecha de miel → Envasado en barriles → Control de destino → Exportación
+                </p>
+            </div>
+            <p>
+                El SGAI propuesto cubre toda esta cadena: desde el registro GPS del apiario hasta el
+                seguimiento de cada barril exportado, incluyendo la trazabilidad de qué colmenas
+                contribuyeron a cada cosecha.
+            </p>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 5: MÓDULOS DE IA -->
+        <section class="section" id="ia">
+            <span class="section-tag">05 · Innovación Tecnológica</span>
+            <h2>Módulos de Inteligencia Artificial</h2>
+            <p>
+                La inclusión de IA es la respuesta directa al problema de usabilidad con guantes.
+                Se implementaron dos módulos que permiten a Matías trabajar en el apiario
+                sin necesidad de tocar el dispositivo:
+            </p>
+
+            <h3>🎙️ Asistente de Voz Manos Libres</h3>
+            <p>
+                Utiliza la <strong>Web Speech API</strong> del navegador para capturar el dictado de Matías
+                en español rioplatense (es-UY). El sistema interpreta frases como
+                <em>"colmena cuatro en estado regular, reina vieja"</em> y extrae automáticamente:
+            </p>
+            <ul class="styled">
+                <li>El número de colmena mencionado (incluso sin la palabra "colmena" antes: "4 está regular")</li>
+                <li>El estado general de la colmena (Buena, Regular, Mala)</li>
+                <li>El estado de la reina (Joven y Activa, Vieja y Débil, Ausente/Muerta)</li>
+                <li>Validación de que el contenido sea apícola — rechaza dictados no relacionados</li>
+            </ul>
+
+            <h3>📷 Visión Computacional en Tiempo Real</h3>
+            <p>
+                Permite tomar una foto del cajón o marco de la colmena con la cámara del dispositivo.
+                El sistema analiza la imagen y determina:
+            </p>
+            <ul class="styled">
+                <li>Estado del material (cajón nuevo, desgaste moderado, daño severo)</li>
+                <li>Presencia de panal saludable vs. vacío</li>
+                <li>Rechazo de imágenes no relacionadas con apicultura (manos, objetos externos, etc.)</li>
+                <li>Delimitación visual del área analizada mediante bounding boxes</li>
+            </ul>
+
+            <div class="info-box">
+                <p>
+                    <strong>Nota técnica:</strong> Ambos módulos funcionan en modo simulado para la entrega académica.
+                    En producción real, el módulo de voz se conectaría a <strong>Azure Cognitive Speech</strong>
+                    y el módulo visual a un modelo <strong>YOLO entrenado</strong> con imágenes de panales y cajones.
+                </p>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 6: REQUERIMIENTOS -->
+        <section class="section" id="funcionales">
+            <span class="section-tag">06 · Especificación</span>
+            <h2>Requerimientos del Sistema</h2>
+
+            <h3>Requerimientos Funcionales</h3>
+            <ul class="styled">
+                <li>Registro y gestión de apiarios con coordenadas GPS y datos del MGAP</li>
+                <li>Alta, baja y modificación de colmenas con estado sanitario y tipo de caja</li>
+                <li>Registro de inspecciones con historial completo por colmena</li>
+                <li>Control de tratamientos sanitarios con fechas, medicamentos y dosis</li>
+                <li>Gestión de cosechas y barriles de exportación con destino y estado</li>
+                <li>Alimentación suplementaria programada con alertas de vencimiento</li>
+                <li>Dictado por voz con procesamiento de lenguaje natural en español</li>
+                <li>Análisis visual de materiales mediante cámara web con IA</li>
+                <li>Dashboard de indicadores: colmenas activas, producción estimada, costos</li>
+                <li>Trazabilidad completa colmena → cosecha → barril → exportación</li>
+            </ul>
+
+            <h3>Requerimientos No Funcionales</h3>
+            <ul class="styled">
+                <li>Interfaz operable con guantes (botones grandes, voice-first)</li>
+                <li>Tiempo de respuesta del módulo de voz: menos de 3 segundos</li>
+                <li>Soporte offline para registro básico sin conectividad</li>
+                <li>Compatibilidad con dispositivos móviles y de escritorio</li>
+                <li>Seguridad con control de acceso por roles</li>
+                <li>Cumplimiento con Ley 18.331 de Protección de Datos Personales (Uruguay)</li>
+                <li>Disponibilidad del sistema: 99% en horario productivo</li>
+            </ul>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 7: METODOLOGÍA -->
+        <section class="section" id="metodologia">
+            <span class="section-tag">07 · Metodología</span>
+            <h2>Metodología de Desarrollo<br/>— Scrum Ágil</h2>
+            <p>
+                Se adoptó el marco <strong>Scrum</strong> como metodología de desarrollo, fundamentado
+                en la necesidad de entregas incrementales que puedan ser validadas con Matías en el campo.
+            </p>
+            <h3>Justificación de la elección de Scrum</h3>
+            <ol class="styled">
+                <li><strong>Entregas incrementales:</strong> Permite validar módulos complejos de IA con el usuario en ciclos cortos antes de avanzar.</li>
+                <li><strong>Validación constante:</strong> Matías puede probar el sistema en su apiario real al final de cada sprint.</li>
+                <li><strong>Adaptabilidad:</strong> El backlog se reajusta según los imprevistos del ciclo productivo apícola (temporada de cosecha, sanidad).</li>
+                <li><strong>Transparencia:</strong> Las ceremonias de Scrum (Daily, Review, Retrospective) mantienen al equipo alineado.</li>
+            </ol>
+
+            <h3>Artefactos Scrum utilizados</h3>
+            <ul class="styled">
+                <li><strong>Product Backlog:</strong> Lista priorizada de todas las funcionalidades del SGAI</li>
+                <li><strong>Sprint Backlog:</strong> Subconjunto de tareas comprometidas para cada sprint de 2 semanas</li>
+                <li><strong>Incremento:</strong> Versión funcional y testeable del sistema al cierre de cada sprint</li>
+            </ul>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 8: FACTIBILIDAD -->
+        <section class="section" id="factibilidad">
+            <span class="section-tag">08 · Estudio de Factibilidad</span>
+            <h2>Análisis de Factibilidad</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🔧</div>
+                    <h4>Técnica</h4>
+                    <p>ASP.NET 9, SQL Server, Bootstrap, Web Speech API — tecnologías maduras con amplia documentación. Riesgo tecnológico nulo.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">👤</div>
+                    <h4>Operativa</h4>
+                    <p>Matías es un stakeholder activo que quiere digitalizar su gestión. Alta motivación de adopción asegurada.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💰</div>
+                    <h4>Económica</h4>
+                    <p>Costo de desarrollo académico. En producción, infraestructura mínima en la nube (hosting compartido ~$15/mes).</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚖️</div>
+                    <h4>Legal</h4>
+                    <p>Cumplimiento con Ley 18.331 y regulaciones del MGAP para declaración de ubicación de apiarios.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 9: EQUIPO -->
+        <section class="section" id="equipo">
+            <span class="section-tag">09 · Equipo</span>
+            <h2>Integrantes del Equipo</h2>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">A</div>
+                    <h4>Ana Laura Damasco Lain</h4>
+                    <div class="role">Product Owner · Scrum Master · Dev</div>
+                    <p>Análisis de requerimientos, gestión del backlog, diseño del frontend, módulo de asistente de voz.</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">M</div>
+                    <h4>Micaela Roca</h4>
+                    <div class="role">DBA · Scrum Master · Dev</div>
+                    <p>Diseño físico de la base de datos, triggers, stored procedures, módulo sanitario y cosechas.</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">🐝</div>
+                    <h4>Matías</h4>
+                    <div class="role">Cliente · Usuario Final · Validador</div>
+                    <p>Proporciona los requerimientos del negocio, valida en campo al final de cada sprint.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 10: SQA -->
+        <section class="section" id="sqa">
+            <span class="section-tag">10 · Calidad de Software</span>
+            <h2>Plan de SQA<br/>(Software Quality Assurance)</h2>
+
+            <h3>Estándares de código adoptados</h3>
+            <ul class="styled">
+                <li><strong>C# / .NET:</strong> PascalCase para clases y métodos públicos, camelCase para variables locales. Un controlador por módulo de negocio.</li>
+                <li><strong>SQL Server:</strong> Tablas en singular (Apiario, Colmena, Cosecha). Restricciones CHECK explícitas para todos los campos enumerados. Índices sobre columnas de búsqueda frecuente.</li>
+                <li><strong>HTML/CSS:</strong> Semántica correcta, uso de Bootstrap para consistencia visual.</li>
+                <li><strong>Git:</strong> Commits descriptivos en español, ramas por feature, PRs con revisión.</li>
+            </ul>
+
+            <h3>Clasificación de severidad de defectos</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Nivel</th><th>Descripción</th><th>Plazo de resolución</th></tr>
+                    <tr>
+                        <td><span class="badge badge-red">Bloqueante</span></td>
+                        <td>Caída del sistema, pérdida de datos, quiebre de trazabilidad.</td>
+                        <td>Inmediato — frenar tareas actuales</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-yellow">Mayor</span></td>
+                        <td>Funcionalidad incorrecta pero el sistema sigue operativo.</td>
+                        <td>Próximo sprint</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-green">Menor / Cosmético</span></td>
+                        <td>Errores visuales, textos incorrectos, desalineación de UI.</td>
+                        <td>Al cierre del sprint actual</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>Métricas de calidad monitoreadas</h3>
+            <ul class="styled">
+                <li>Densidad de defectos por módulo (bugs / KLOC)</li>
+                <li>Cobertura de código por pruebas unitarias (objetivo: ≥70%)</li>
+                <li>Tiempo medio de resolución de bugs bloqueantes</li>
+                <li>Satisfacción del usuario final medida en cada revisión de sprint</li>
+            </ul>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 11: TESTING -->
+        <section class="section" id="testing">
+            <span class="section-tag">11 · Testing</span>
+            <h2>Plan de Testing</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🔬</div>
+                    <h4>Pruebas Unitarias</h4>
+                    <p>xUnit .NET — cobertura del motor de extracción de datos de voz, cálculo de pesos en cosechas y validación de restricciones de BD.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔗</div>
+                    <h4>Pruebas de Integración</h4>
+                    <p>Verificar el flujo completo: voz → controlador → base de datos → respuesta visual. Sin mocks, con BD real.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌿</div>
+                    <h4>Pruebas de Aceptación</h4>
+                    <p>Sesiones con Matías en el apiario de San José usando traje y guantes, para validar que el sistema es usable en condiciones reales.</p>
+                </div>
+            </div>
+
+            <h3>Casos de prueba destacados</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>#</th><th>Caso de prueba</th><th>Resultado esperado</th></tr>
+                    <tr><td>CP-01</td><td>Dictar "4 está en estado regular" con mic real</td><td>Colmena #4 actualizada a estado Regular en BD</td></tr>
+                    <tr><td>CP-02</td><td>Dictar "hola como estás" (no apícola)</td><td>Sistema rechaza con mensaje de validación</td></tr>
+                    <tr><td>CP-03</td><td>Dictar grosería</td><td>Sistema rechaza con mensaje de lenguaje inapropiado</td></tr>
+                    <tr><td>CP-04</td><td>Escanear foto de mano con cámara real</td><td>Sistema rechaza: imagen no relacionada con apicultura</td></tr>
+                    <tr><td>CP-05</td><td>Escanear panal saludable</td><td>Sistema detecta estructura y muestra diagnóstico positivo</td></tr>
+                    <tr><td>CP-06</td><td>Insertar barril con peso negativo en SQL</td><td>Restricción CHECK rechaza la inserción</td></tr>
+                    <tr><td>CP-07</td><td>Insertar inspección → trigger actualiza colmena</td><td>Estado de colmena actualizado automáticamente via trigger</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 12: SCM -->
+        <section class="section" id="scm">
+            <span class="section-tag">12 · Control de Configuración</span>
+            <h2>Plan de SCM<br/>(Software Configuration Management)</h2>
+
+            <h3>Repositorio y estrategia de ramas</h3>
+            <div class="info-box">
+                <p>
+                    🔗 <strong>Repositorio:</strong> github.com/mickydbz8/Obligatorio2026MyA
+                </p>
+            </div>
+            <ul class="styled">
+                <li><strong>main:</strong> Código estable y entregable. Sólo se actualiza mediante Pull Request aprobado.</li>
+                <li><strong>develop:</strong> Rama integradora del trabajo diario del equipo.</li>
+                <li><strong>feature/nombre-tarea:</strong> Ramas individuales de corta duración (ej: <code>feature/asistente-voz</code>, <code>feature/modulo-sanitario</code>).</li>
+            </ul>
+
+            <h3>Política de commits</h3>
+            <ul class="styled">
+                <li>Mensajes en español, descriptivos y accionables</li>
+                <li>Un commit por cambio lógico cohesivo</li>
+                <li>Sin archivos de configuración local (<code>.env</code>, <code>bin/</code>, <code>obj/</code>) en el repositorio</li>
+            </ul>
+
+            <h3>Gestión de cambios en la base de datos</h3>
+            <p>
+                Cambios estructurales gestionados mediante migraciones de Entity Framework Core.
+                El script <code>BaseDeDatos2.sql</code> es la fuente de verdad para la configuración
+                de SQL Server en producción, con auto-recreación limpia de la base de datos al ejecutarse.
+            </p>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 13: CAPACITACIÓN -->
+        <section class="section" id="capacitacion">
+            <span class="section-tag">13 · Capacitación</span>
+            <h2>Plan de Capacitación al Usuario</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🌾</div>
+                    <h4>Sesión 1 — Campo (1 hora)</h4>
+                    <p>En el apiario de San José. Foco en el asistente de voz: modulación correcta, frases reconocidas, manejo de errores con guantes puestos.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🖥️</div>
+                    <h4>Sesión 2 — Administrativa (2 horas)</h4>
+                    <p>Presencial o por Teams. Gestión de apiarios, colmenas, tratamientos, cosechas, barriles y lectura del dashboard de KPIs.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📘</div>
+                    <h4>Manual de Usuario</h4>
+                    <p>Documento PDF con capturas de pantalla, frases de voz reconocidas y guía de resolución de problemas frecuentes.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 14: SPRINTS -->
+        <section class="section" id="sprints">
+            <span class="section-tag">14 · Planificación</span>
+            <h2>Sprints e Hitos del Proyecto</h2>
+            <p>Desarrollo organizado en 4 Sprints de 2 semanas cada uno:</p>
+
+            <div class="sprint-grid">
+                <div class="sprint-card">
+                    <div class="sprint-num">Sprint 1 · Semanas 1–2</div>
+                    <h4>Base de Datos y CRUD Core</h4>
+                    <p>Diseño físico del esquema en SQL Server, migraciones de EF Core, CRUD completo de Apiarios, Colmenas y Tratamientos.</p>
+                </div>
+                <div class="sprint-card">
+                    <div class="sprint-num">Sprint 2 · Semanas 3–4</div>
+                    <h4>Módulos de IA (Voz y Cámara)</h4>
+                    <p>Implementación del asistente de voz manos libres, módulo de visión computacional, validaciones de apicultura y prueba en campo.</p>
+                </div>
+                <div class="sprint-card">
+                    <div class="sprint-num">Sprint 3 · Semanas 5–6</div>
+                    <h4>Trazabilidad y Cosechas</h4>
+                    <p>Módulo de cosechas, gestión de barriles exportados, vinculación con colmenas de origen y reportes del MGAP.</p>
+                </div>
+                <div class="sprint-card">
+                    <div class="sprint-num">Sprint 4 · Semanas 7–8</div>
+                    <h4>Dashboard, KPIs y Cierre</h4>
+                    <p>Tablero de indicadores financieros, alertas de alimentación, estimador de producción y pruebas de aceptación finales.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 15: RIESGOS -->
+        <section class="section" id="riesgos">
+            <span class="section-tag">15 · Gestión de Riesgos</span>
+            <h2>Matriz de Riesgos del Proyecto</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Riesgo</th><th>Probabilidad</th><th>Impacto</th><th>Mitigación</th></tr>
+                    <tr>
+                        <td>Falta de cobertura móvil en el apiario</td>
+                        <td><span class="badge badge-yellow">Media</span></td>
+                        <td><span class="badge badge-red">Alto</span></td>
+                        <td>Implementar soporte offline con almacenamiento local y sincronización posterior</td>
+                    </tr>
+                    <tr>
+                        <td>Mala calidad de reconocimiento de voz con traje</td>
+                        <td><span class="badge badge-yellow">Media</span></td>
+                        <td><span class="badge badge-yellow">Medio</span></td>
+                        <td>Entrenar el modelo con vocabulario apícola rioplatense; botones de atajo rápido como fallback</td>
+                    </tr>
+                    <tr>
+                        <td>Cambio de requerimientos por temporada productiva</td>
+                        <td><span class="badge badge-yellow">Media</span></td>
+                        <td><span class="badge badge-yellow">Medio</span></td>
+                        <td>Backlog flexible con revisión al inicio de cada sprint</td>
+                    </tr>
+                    <tr>
+                        <td>Errores de modelado en la base de datos</td>
+                        <td><span class="badge badge-green">Baja</span></td>
+                        <td><span class="badge badge-red">Alto</span></td>
+                        <td>Revisión del modelo relacional antes del Sprint 1; restricciones CHECK en todas las enumeraciones</td>
+                    </tr>
+                    <tr>
+                        <td>Resistencia del cliente al cambio tecnológico</td>
+                        <td><span class="badge badge-green">Baja</span></td>
+                        <td><span class="badge badge-yellow">Medio</span></td>
+                        <td>Capacitación progresiva, interfaz voice-first, feedback continuo de Matías en cada sprint</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="gold-box" style="margin-top: 40px;">
+                <p>
+                    <strong>✅ Estado final del proyecto:</strong> El sistema Zánganos SA se entregó con todos los módulos funcionales —
+                    gestión de apiarios, colmenas, inspecciones, tratamientos, cosechas, barriles y el asistente de IA manos libres —
+                    conectado a la base de datos <code>ProyectoApicultura1</code> en SQL Server
+                    (<code>Mickydbz8\SQLEXPRESS</code>). El repositorio está publicado en GitHub con
+                    historial completo de commits y documentación integrada.
+                </p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    // Sidebar active link on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const links = document.querySelectorAll('.sidebar a');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(s => {
+            if (window.scrollY >= s.offsetTop - 80) current = s.id;
+        });
+        links.forEach(a => {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+        });
+    });
+</script>
+
+</body>
+</html>

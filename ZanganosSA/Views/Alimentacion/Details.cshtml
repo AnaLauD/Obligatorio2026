@@ -1,0 +1,28 @@
+@model ZanganosSA.Models.Alimentacion
+@{
+    ViewData["Title"] = "Detalles de la Alimentación";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-eye text-info"></i> Detalles de la Alimentación</h2>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Alimentación N°</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Apiario (Depto)</dt>
+                <dd class="col-sm-8">@Model.Apiario?.Departamento</dd>
+                <dt class="col-sm-4 fw-bold">Tipo de Alimento</dt>
+                <dd class="col-sm-8">@Model.TipoAlimento</dd>
+                <dt class="col-sm-4 fw-bold">Fecha Programada</dt>
+                <dd class="col-sm-8">@Model.FechaProgramada.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4 fw-bold">Cantidad</dt>
+                <dd class="col-sm-8">@(Model.Cantidad.HasValue ? $"{Model.Cantidad.Value.ToString("N2")} kg" : "N/A")</dd>
+            </dl>
+            <div class="d-flex gap-2 mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-info text-white fw-bold"><i class="bi bi-pencil"></i> Editar</a>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>

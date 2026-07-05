@@ -1,0 +1,77 @@
+@model IEnumerable<ZanganosSA.Models.Inspeccion>
+@{
+    ViewData["Title"] = "Historial de Inspecciones";
+}
+
+<div class="card shadow-sm p-4 mb-4 border-warning">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0 text-warning"><i class="bi bi-journal-text"></i> Historial de Inspecciones</h2>
+        <a asp-action="Create" class="btn btn-warning fw-bold"><i class="bi bi-plus-circle"></i> Nueva Inspección</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Colmena</th>
+                    <th>Apiario (Depto)</th>
+                    <th>Estado Colmena</th>
+                    <th>Estado Reina</th>
+                    <th>Población</th>
+                    <th>Observaciones</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td><strong>#@item.ColmenaId</strong></td>
+                        <td>@item.Colmena?.Apiario?.Departamento</td>
+                        <td>
+                            @{
+                                string badgeClass = item.EstadoColmena == "Fuerte" ? "bg-success" : (item.EstadoColmena == "Critica" || item.EstadoColmena == "Debil" ? "bg-danger" : "bg-warning text-dark");
+                            }
+                            <span class="badge @badgeClass">@item.EstadoColmena</span>
+                        </td>
+                        <td>@item.EstadoReina</td>
+                        <td>@(item.PoblacionEstimada.HasValue ? item.PoblacionEstimada.Value.ToString("N0") : "N/A")</td>
+                        <td class="text-muted small">@item.Observaciones</td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil"></i> Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-eye"></i> Detalles</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash"></i> Eliminar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <span class="text-muted small">Página @ViewBag.CurrentPage de @(ViewBag.TotalPages == 0 ? 1 : ViewBag.TotalPages)</span>
+        </div>
+        <div class="d-flex gap-2">
+            @if (ViewBag.HasPreviousPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" class="btn btn-outline-warning"><i class="bi bi-arrow-left"></i> Anterior</a>
+            }
+            else
+            {
+                <span class="btn btn-outline-warning disabled"><i class="bi bi-arrow-left"></i> Anterior</span>
+            }
+
+            @if (ViewBag.HasNextPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" class="btn btn-outline-warning">Siguiente <i class="bi bi-arrow-right"></i></a>
+            }
+            else
+            {
+                <span class="btn btn-outline-warning disabled">Siguiente <i class="bi bi-arrow-right"></i></span>
+            }
+        </div>
+    </div>
+</div>

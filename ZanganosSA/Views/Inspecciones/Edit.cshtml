@@ -1,0 +1,61 @@
+@model ZanganosSA.Models.Inspeccion
+@{
+    ViewData["Title"] = "Editar Inspección";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-pencil text-warning"></i> Editar Inspección</h2>
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="mb-3">
+                    <label asp-for="ColmenaId" class="form-label fw-bold">Colmena</label>
+                    <select asp-for="ColmenaId" class="form-select" asp-items="ViewBag.ColmenaId" required></select>
+                    <span asp-validation-for="ColmenaId" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="FechaHora" class="form-label fw-bold">Fecha y Hora</label>
+                    <input asp-for="FechaHora" class="form-control" type="datetime-local" required />
+                    <span asp-validation-for="FechaHora" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="EstadoColmena" class="form-label fw-bold">Estado de la Colmena</label>
+                    <select asp-for="EstadoColmena" class="form-select" required>
+                        <option value="Media">Media</option>
+                        <option value="Fuerte">Fuerte</option>
+                        <option value="Debil">Debil</option>
+                        <option value="Critica">Critica</option>
+                    </select>
+                    <span asp-validation-for="EstadoColmena" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="EstadoReina" class="form-label fw-bold">Estado de la Reina</label>
+                    <select asp-for="EstadoReina" class="form-select" required>
+                        <option value="Sana">Sana</option>
+                        <option value="Joven">Joven</option>
+                        <option value="Vieja">Vieja</option>
+                        <option value="Ausente">Ausente</option>
+                        <option value="Reemplazada">Reemplazada</option>
+                    </select>
+                    <span asp-validation-for="EstadoReina" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PoblacionEstimada" class="form-label fw-bold">Población Estimada (Abejas)</label>
+                    <input asp-for="PoblacionEstimada" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="PoblacionEstimada" class="text-danger small"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Observaciones" class="form-label fw-bold">Observaciones</label>
+                    <textarea asp-for="Observaciones" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Observaciones" class="text-danger small"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save"></i> Guardar Cambios</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

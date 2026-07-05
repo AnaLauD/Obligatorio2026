@@ -1,0 +1,27 @@
+@model ZanganosSA.Models.Apiario
+
+@{
+    ViewData["Title"] = "Eliminar Apiario";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4 border-danger">
+            <h2 class="mb-2 text-danger"><i class="bi bi-exclamation-triangle"></i> Eliminar Apiario</h2>
+            <p class="text-muted mb-4">¿Estás seguro de que deseas eliminar este apiario? Esta acción no se puede deshacer.</p>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Departamento</dt>
+                <dd class="col-sm-8">@Model.Departamento</dd>
+                <dt class="col-sm-4 fw-bold">Coordenadas</dt>
+                <dd class="col-sm-8">@(Model.Latitud.HasValue && Model.Longitud.HasValue ? $"{Model.Latitud}, {Model.Longitud}" : "No registradas")</dd>
+                <dt class="col-sm-4 fw-bold">Seccional Policial</dt>
+                <dd class="col-sm-8">@Model.SeccionalPolicial</dd>
+            </dl>
+            <form asp-action="Delete" class="d-flex gap-2 mt-3">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-trash"></i> Sí, eliminar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>

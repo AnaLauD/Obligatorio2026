@@ -1,0 +1,31 @@
+@model ZanganosSA.Models.Colmena
+
+@{
+    ViewData["Title"] = "Eliminar Colmena";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4 border-danger">
+            <h2 class="mb-2 text-danger"><i class="bi bi-exclamation-triangle"></i> Eliminar Colmena</h2>
+            <p class="text-muted mb-4">¿Estás seguro de que deseas eliminar esta colmena? Esta acción no se puede deshacer.</p>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Id Colmena</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Tipo de Caja</dt>
+                <dd class="col-sm-8">@Model.TipoCaja</dd>
+                <dt class="col-sm-4 fw-bold">Estado de Colmena</dt>
+                <dd class="col-sm-8">@Model.EstadoColmena</dd>
+                <dt class="col-sm-4 fw-bold">Estado de Reina</dt>
+                <dd class="col-sm-8">@Model.ReinaEstado</dd>
+                <dt class="col-sm-4 fw-bold">Apiario (Depto)</dt>
+                <dd class="col-sm-8">@Model.Apiario?.Departamento</dd>
+            </dl>
+            <form asp-action="Delete" class="d-flex gap-2 mt-3">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-trash"></i> Sí, eliminar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>

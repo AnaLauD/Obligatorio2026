@@ -1,0 +1,23 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<h1 class="text-danger">Error.</h1>
+<h2 class="text-danger">Ocurrió un error al procesar tu solicitud.</h2>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>ID de Solicitud:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<h3>Modo de Desarrollo</h3>
+<p>
+    Cambiar al entorno de <strong>Desarrollo</strong> mostrará información más detallada sobre el error.
+</p>
+<p>
+    <strong>El entorno de Desarrollo no debe habilitarse en aplicaciones desplegadas en producción.</strong>
+    Puede resultar en la exposición de información sensible a los usuarios finales.
+</p>

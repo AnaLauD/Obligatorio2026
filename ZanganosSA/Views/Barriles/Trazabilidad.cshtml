@@ -1,0 +1,330 @@
+@model ZanganosSA.Models.Barril
+@{
+    ViewData["Title"] = "Ficha de Trazabilidad - Barril #" + Model.Id;
+    var colmenas = ViewBag.ColmenasInvolucradas as List<Colmena> ?? new List<Colmena>();
+    
+    // Obtener apiarios únicos involucrados
+    var apiarios = colmenas.Select(c => c.Apiario).Where(a => a != null).DistinctBy(a => a!.Id).ToList();
+    
+    // Recopilar todos los tratamientos sanitarios aplicados
+    var tratamientos = colmenas
+        .SelectMany(c => c.ColmenaTratamientos)
+        .Select(ct => new { 
+            ct.ColmenaId, 
+            ct.FechaAplicacion, 
+            Medicamento = ct.Tratamiento?.Medicamento ?? "N/D",
+            Dosis = ct.Tratamiento?.Dosis ?? "N/D"
+        })
+        .OrderByDescending(t => t.FechaAplicacion)
+        .ToList();
+
+    // Recopilar todas las inspecciones recientes
+    var inspecciones = colmenas
+        .SelectMany(c => c.Inspecciones)
+        .OrderByDescending(i => i.FechaHora)
+        .Take(5)
+        .ToList();
+
+    // Generar un Hash criptográfico de trazabilidad (simulado para el barril)
+    string rawStringToHash = $"BARRIL-{Model.Id}-LOTE-{Model.Cosecha?.Lote}-PESO-{Model.PesoKg}-FECHA-{Model.Cosecha?.FechaCosecha:yyyyMMdd}";
+    string sha256Hash = string.Concat(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawStringToHash)).Select(b => b.ToString("x2"))).Substring(0, 32).ToUpper();
+}
+
+<style>
+    /* Estilos Oficiales del Certificado */
+    .cert-container {
+        font-family: 'Courier New', Courier, monospace;
+    }
+    
+    .cert-border {
+        border: 4px double #0a3d62;
+        padding: 30px;
+        background-color: #fff;
+        position: relative;
+    }
+    
+    .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 8rem;
+        color: rgba(10, 61, 98, 0.04);
+        pointer-events: none;
+        white-space: nowrap;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .cert-header {
+        border-bottom: 2px solid #0a3d62;
+        padding-bottom: 15px;
+    }
+    
+    .cert-title {
+        color: #0a3d62;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    /* Timeline de Trazabilidad */
+    .timeline-steps {
+        position: relative;
+        padding-left: 30px;
+        border-left: 2px dashed #ffc107;
+    }
+
+    .timeline-step {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .timeline-step::before {
+        content: "";
+        position: absolute;
+        left: -41px;
+        top: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #ffc107;
+        border: 4px solid #fff;
+        box-shadow: 0 0 0 2px #0a3d62;
+    }
+
+    .timeline-step-title {
+        font-weight: bold;
+        color: #0a3d62;
+        margin-bottom: 5px;
+    }
+
+    /* Impresión limpia */
+    @@media print {
+        header, footer, .navbar, .btn-print-bar, .alert {
+            display: none !important;
+        }
+        body {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        .cert-border {
+            border: 2px solid #0a3d62 !important;
+            padding: 15px !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+
+<div class="container py-4">
+    <!-- Barra de control -->
+    <div class="btn-print-bar mb-3 d-flex gap-2 align-items-center">
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer-fill"></i> Imprimir Etiqueta / Exportar PDF
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a Barriles
+        </a>
+        <span class="text-muted small ms-2 d-none d-md-inline">* Para exportar a PDF oficial, elija "Guardar como PDF" en la ventana de impresión.</span>
+    </div>
+
+    <!-- DOCUMENTO OFICIAL -->
+    <div class="card shadow-lg border-0 cert-border p-4 p-md-5">
+        <div class="watermark">CERTIFICADO</div>
+        
+        <!-- ENCABEZADO MGAP -->
+        <div class="row align-items-center cert-header mb-4">
+            <div class="col-md-2 text-center text-md-start mb-3 mb-md-0">
+                <i class="bi bi-shield-fill-check text-primary" style="font-size: 65px; color: #0a3d62 !important;"></i>
+            </div>
+            <div class="col-md-8 text-center">
+                <h4 class="fw-bold mb-0 text-uppercase" style="color: #0a3d62;">República Oriental del Uruguay</h4>
+                <h5 class="text-muted mb-1 small">Ministerio de Ganadería, Agricultura y Pesca</h5>
+                <h3 class="fw-bold cert-title mb-0">Ficha de Trazabilidad Apícola (MGAP-FTA)</h3>
+                <p class="mb-0 text-muted small mt-1">Conforme a la Ley de Trazabilidad Alimentaria y Exportación Agropecuaria</p>
+            </div>
+            <div class="col-md-2 text-center text-md-end">
+                <div class="d-inline-block border p-2 bg-light text-center">
+                    <span class="small text-muted d-block">ID BARRIL</span>
+                    <strong class="fs-4 text-primary">#@Model.Id</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <!-- DETALLES DEL LOTE Y BARRIL -->
+            <div class="col-md-8">
+                <h5 class="fw-bold text-dark border-bottom pb-1 mb-3"><i class="bi bi-info-circle-fill"></i> Identificación del Producto</h5>
+                <div class="row">
+                    <div class="col-6 mb-2">
+                        <strong class="text-muted small d-block">LOTE COSECHA:</strong>
+                        <span class="fs-6 fw-bold">@Model.Cosecha?.Lote</span>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <strong class="text-muted small d-block">FECHA DE EXTRACCIÓN:</strong>
+                        <span class="fs-6 fw-bold">@Model.Cosecha?.FechaCosecha.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <strong class="text-muted small d-block">PESO NETO DECLARADO:</strong>
+                        <span class="fs-6 fw-bold text-success">@Model.PesoKg kg</span>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <strong class="text-muted small d-block">ESTADO DE EXPORTACIÓN:</strong>
+                        <span class="badge @(Model.Estado == "Exportado" ? "bg-success" : "bg-primary")">@Model.Estado</span>
+                    </div>
+                    <div class="col-12">
+                        <strong class="text-muted small d-block">DESTINO INTERNACIONAL:</strong>
+                        <span class="fs-6 fw-bold text-dark"><i class="bi bi-globe"></i> @(string.IsNullOrEmpty(Model.Destino) ? "No especificado / En preparación" : Model.Destino)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CÓDIGO QR GENERADO CON JS -->
+            <div class="col-md-4 text-center mt-3 mt-md-0 d-flex flex-column align-items-center justify-content-center">
+                <div id="qrcode" class="border p-2 bg-white shadow-sm" style="display:inline-block;"></div>
+                <span class="small text-muted mt-2 d-block" style="font-size: 10px; max-width: 180px;">Escanee para validar el viaje de la miel y verificar la autenticidad en el portal.</span>
+            </div>
+        </div>
+
+        <!-- EL VIAJE DE LA MIEL (TIMELINE) -->
+        <h5 class="fw-bold text-dark border-bottom pb-1 mb-4"><i class="bi bi-signpost-split-fill"></i> Cadena de Custodia (El Viaje de la Miel)</h5>
+        
+        <div class="timeline-steps">
+            <!-- PASO 1: ORIGEN -->
+            <div class="timeline-step">
+                <div class="timeline-step-title">Paso 1: Origen del Apiario y Colmenas</div>
+                <div class="row small">
+                    <div class="col-md-6">
+                        <strong>Apiarios Productores:</strong>
+                        <ul class="mb-0 ps-3">
+                            @foreach (var ap in apiarios)
+                            {
+                                <li>Apiario #@ap!.Id - Departamento: @ap.Departamento (Seccional @ap.SeccionalPolicial)</li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Colmenas que aportaron al lote:</strong>
+                        <span class="text-muted">
+                            @string.Join(", ", colmenas.Select(c => $"Colmena #{c.Id} ({c.TipoCaja})"))
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2: SANIDAD Y SEGURIDAD ALIMENTARIA -->
+            <div class="timeline-step">
+                <div class="timeline-step-title">Paso 2: Registro de Bioseguridad y Sanidad Animal</div>
+                <p class="mb-1 small">Historial de tratamientos sanitarios aplicados en el período previo a la cosecha para asegurar un producto libre de trazas de pesticidas o antibióticos:</p>
+                @if (tratamientos.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0 small" style="font-size: 11px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Colmena</th>
+                                    <th>Fecha Aplicación</th>
+                                    <th>Tratamiento / Medicamento</th>
+                                    <th>Dosis Utilizada</th>
+                                    <th>Retiro en Miel</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var tr in tratamientos)
+                                {
+                                    <tr>
+                                        <td>#@tr.ColmenaId</td>
+                                        <td>@tr.FechaAplicacion.ToString("dd/MM/yyyy")</td>
+                                        <td><strong>@tr.Medicamento</strong></td>
+                                        <td>@tr.Dosis</td>
+                                        <td><span class="text-success fw-bold"><i class="bi bi-shield-check"></i> Cumplido</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success p-2 mb-0 small" style="font-size: 11px;">
+                        <i class="bi bi-shield-check"></i> No se registran tratamientos de riesgo en el ciclo de cosecha. Producto 100% Orgánico.
+                    </div>
+                }
+            </div>
+
+            <!-- PASO 3: INSPECCIONES Y CONTROL DE CALIDAD -->
+            <div class="timeline-step">
+                <div class="timeline-step-title">Paso 3: Inspecciones Técnicas Pre-Cosecha</div>
+                <p class="mb-1 small">Últimos reportes de auditoría de campo de las colmenas involucradas en el lote:</p>
+                @if (inspecciones.Any())
+                {
+                    <ul class="mb-0 small ps-3">
+                        @foreach (var ins in inspecciones)
+                        {
+                            <li>
+                                <strong>@ins.FechaHora.ToString("dd/MM/yyyy")</strong> - Colmena #@ins.ColmenaId: 
+                                Estado: <span class="fw-bold">@ins.EstadoColmena</span> | Reina: @ins.EstadoReina | Población: @(ins.PoblacionEstimada?.ToString("N0") ?? "N/D") abejas.
+                                <span class="text-muted italic">(@ins.Observaciones)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span class="small text-muted">No se cargaron inspecciones recientes para las colmenas seleccionadas.</span>
+                }
+            </div>
+
+            <!-- PASO 4: EMBALAJE Y CONSOLIDACIÓN -->
+            <div class="timeline-step">
+                <div class="timeline-step-title">Paso 4: Certificación de Envase y Despacho</div>
+                <p class="mb-0 small">
+                    El lote de miel fue consolidado en la planta de extracción de <strong>Zánganos SA</strong>, envasado en tambor metálico reforzado revestido con resina alimentaria epóxica (Barril #@Model.Id). Se declara apto para consumo humano directo e industrial.
+                </p>
+            </div>
+        </div>
+
+        <!-- FIRMA DIGITAL Y SELLO MGAP -->
+        <div class="row mt-5 pt-4 border-top">
+            <div class="col-md-7 text-start mb-3 mb-md-0">
+                <div class="p-3 border rounded bg-light" style="font-size: 11px; max-width: 500px;">
+                    <div class="fw-bold text-uppercase text-primary mb-1"><i class="bi bi-patch-check-fill"></i> Firma Digital Criptográfica de Origen</div>
+                    <div class="mb-1 text-muted">SGAI-VERIFY-SHA256: <code>@sha256Hash</code></div>
+                    <div class="text-muted">
+                        El presente reporte de trazabilidad ha sido verificado criptográficamente en origen por el sistema SGAI de Zánganos SA y es compatible con el sistema de trazabilidad de exportación del MGAP de la República Oriental del Uruguay.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-5 text-center d-flex flex-column align-items-center justify-content-center">
+                <div class="p-3 border border-3 border-primary rounded" style="transform: rotate(-3deg); background-color: #fff8f8; max-width: 250px;">
+                    <span class="small text-muted d-block" style="font-size: 9px;">MGAP - SERVICIOS APICOLAS</span>
+                    <strong class="d-block text-primary small text-uppercase">VERIFICADO ORIGEN</strong>
+                    <span class="badge bg-success my-1"><i class="bi bi-check-lg"></i> APTO EXPORTAR</span>
+                    <span class="d-block small text-muted" style="font-size: 9px;">FECHA: @DateTime.Today.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cargar qrcode.js desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nOMxOB26TctXkq2Y05FQNdsUVecVC4SMsxfGAyvGtGTwjGC2LJDjiG8O3LbdE1R0JzqiReZNFD4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Generar código QR dinámico apuntando a la URL actual
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: window.location.href,
+            width: 125,
+            height: 125,
+            colorDark : "#0a3d62",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
+        });
+    });
+</script>

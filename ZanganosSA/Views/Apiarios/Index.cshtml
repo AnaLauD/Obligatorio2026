@@ -1,0 +1,71 @@
+@model IEnumerable<ZanganosSA.Models.Apiario>
+
+@{
+    ViewData["Title"] = "Apiarios";
+}
+
+<div class="card shadow-sm p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0 text-warning"><i class="bi bi-geo-alt-fill"></i> Apiarios</h2>
+        <a asp-action="Create" class="btn btn-warning fw-bold"><i class="bi bi-plus-circle"></i> Nuevo Apiario</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-honey">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Departamento</th>
+                    <th>Coordenadas (Lat, Long)</th>
+                    <th>Seccional Policial</th>
+                    <th>Fecha Registro</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td><strong>@Html.DisplayFor(modelItem => item.Departamento)</strong></td>
+                        <td><i class="bi bi-pin-map text-muted"></i> @(item.Latitud.HasValue && item.Longitud.HasValue ? $"{item.Latitud}, {item.Longitud}" : "No registrada")</td>
+                        <td>@Html.DisplayFor(modelItem => item.SeccionalPolicial)</td>
+                        <td>@item.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil"></i> Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-eye"></i> Detalles</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash"></i> Eliminar</a>
+                            <a asp-action="ReporteMGAP" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary ms-1" title="Generar Declaración MGAP"><i class="bi bi-file-earmark-text-fill"></i> Declaración MGAP</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <span class="text-muted small">Página @ViewBag.CurrentPage de @(ViewBag.TotalPages == 0 ? 1 : ViewBag.TotalPages)</span>
+        </div>
+        <div class="d-flex gap-2">
+            @if (ViewBag.HasPreviousPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" class="btn-paginado-dorado"><i class="bi bi-arrow-left"></i> Anterior</a>
+            }
+            else
+            {
+                <span class="btn-paginado-dorado disabled"><i class="bi bi-arrow-left"></i> Anterior</span>
+            }
+
+            @if (ViewBag.HasNextPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" class="btn-paginado-dorado">Siguiente <i class="bi bi-arrow-right"></i></a>
+            }
+            else
+            {
+                <span class="btn-paginado-dorado disabled">Siguiente <i class="bi bi-arrow-right"></i></span>
+            }
+        </div>
+    </div>
+</div>
+

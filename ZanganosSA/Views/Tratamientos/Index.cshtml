@@ -1,0 +1,98 @@
+@model IEnumerable<ZanganosSA.Models.Tratamiento>
+
+@{
+    ViewData["Title"] = "Tratamientos Sanitarios";
+}
+
+<div class="card shadow-sm p-4 mb-4 border-danger" style="border-top: 4px solid #dc3545;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0 text-danger"><i class="bi bi-heart-pulse-fill"></i> Tratamientos Sanitarios</h2>
+        <a asp-action="Create" class="btn btn-danger fw-bold"><i class="bi bi-plus-circle"></i> Nuevo Tratamiento</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Id Trat.</th>
+                    <th>Medicamento</th>
+                    <th>Dosis</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Duración (días)</th>
+                    <th>Colmenas Aplicadas</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>#@item.Id</td>
+                        <td><strong>@item.Medicamento</strong></td>
+                        <td>@item.Dosis</td>
+                        <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                        <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
+                        <td>@(item.DuracionDias.HasValue ? $"{item.DuracionDias} días" : "N/A")</td>
+                        <td>
+                            @if (item.ColmenaTratamientos.Any())
+                            {
+                                <span class="badge bg-danger">@item.ColmenaTratamientos.Count colmenas</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Ninguna</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.FechaFin < DateTime.Today)
+                            {
+                                <span class="badge bg-secondary">Finalizado</span>
+                            }
+                            else if (item.FechaInicio <= DateTime.Today && item.FechaFin >= DateTime.Today)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Programado</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil"></i> Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-eye"></i> Detalles</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash"></i> Eliminar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <span class="text-muted small">Página @ViewBag.CurrentPage de @(ViewBag.TotalPages == 0 ? 1 : ViewBag.TotalPages)</span>
+        </div>
+        <div class="d-flex gap-2">
+            @if (ViewBag.HasPreviousPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" class="btn btn-outline-danger"><i class="bi bi-arrow-left"></i> Anterior</a>
+            }
+            else
+            {
+                <span class="btn btn-outline-danger disabled"><i class="bi bi-arrow-left"></i> Anterior</span>
+            }
+
+            @if (ViewBag.HasNextPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" class="btn btn-outline-danger">Siguiente <i class="bi bi-arrow-right"></i></a>
+            }
+            else
+            {
+                <span class="btn btn-outline-danger disabled">Siguiente <i class="bi bi-arrow-right"></i></span>
+            }
+        </div>
+    </div>
+</div>
+

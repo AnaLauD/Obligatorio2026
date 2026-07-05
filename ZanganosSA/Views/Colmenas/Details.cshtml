@@ -1,0 +1,169 @@
+@model ZanganosSA.Models.Colmena
+
+@{
+    ViewData["Title"] = "Detalles de Colmena";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card shadow-sm p-4 mb-4">
+            <h2 class="mb-4 text-warning"><i class="bi bi-box-seam"></i> Colmena: #@Model.Id</h2>
+            
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 fw-bold">Estado de la Colmena:</p>
+                    @{
+                        string badgeClass = Model.EstadoColmena == "Fuerte" ? "bg-success" : (Model.EstadoColmena == "Critica" || Model.EstadoColmena == "Debil" ? "bg-danger" : "bg-warning text-dark");
+                    }
+                    <span class="badge @badgeClass fs-6">@Model.EstadoColmena</span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 fw-bold">Estado de la Reina:</p>
+                    <p class="fs-6 text-muted"><i class="bi bi-activity text-warning"></i> @Model.ReinaEstado</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 fw-bold">Tipo de Caja:</p>
+                    <p class="fs-6 text-muted">@Model.TipoCaja</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 fw-bold">Activa:</p>
+                    <span class="badge @(Model.Activa ? "bg-success" : "bg-secondary")">@(Model.Activa ? "Sí" : "No")</span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 fw-bold">Apiario de Pertenencia:</p>
+                    <p class="fs-6 text-muted"><i class="bi bi-geo-alt text-warning"></i> @Model.Apiario?.Departamento</p>
+                </div>
+                <div class="col-md-12">
+                    <p class="mb-1 fw-bold">Observaciones:</p>
+                    <p class="fs-6 text-muted">@Model.Observaciones</p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning fw-bold"><i class="bi bi-pencil"></i> Editar Colmena</a>
+                <a asp-action="Index" class="btn-paginado-dorado"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+            </div>
+        </div>
+
+        <!-- Historial de Inspecciones -->
+        <div class="card shadow-sm p-4 mb-4">
+            <h3 class="mb-3 text-warning"><i class="bi bi-calendar-event-fill"></i> Historial de Inspecciones (@Model.Inspecciones.Count)</h3>
+            @if (Model.Inspecciones.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Estado Colmena</th>
+                                <th>Estado Reina</th>
+                                <th>Población Estimada</th>
+                                <th>Observaciones</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var insp in Model.Inspecciones.OrderByDescending(i => i.FechaHora))
+                            {
+                                <tr>
+                                    <td>@insp.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@insp.EstadoColmena</td>
+                                    <td>@insp.EstadoReina</td>
+                                    <td>@insp.PoblacionEstimada</td>
+                                    <td>@insp.Observaciones</td>
+                                    <td class="text-center">
+                                        <a asp-controller="Inspecciones" asp-action="Details" asp-route-id="@insp.Id" class="btn btn-sm btn-link text-warning p-0 fw-bold">Ver</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Esta colmena no tiene inspecciones registradas.</p>
+            }
+        </div>
+
+        <!-- Historial de Tratamientos Sanitarios -->
+        <div class="card shadow-sm p-4 mb-4">
+            <h3 class="mb-3 text-warning"><i class="bi bi-heart-pulse-fill"></i> Tratamientos Sanitarios Aplicados (@Model.ColmenaTratamientos.Count)</h3>
+            @if (Model.ColmenaTratamientos.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Medicamento</th>
+                                <th>Dosis</th>
+                                <th>Fecha Aplicación</th>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Fin</th>
+                                <th class="text-center">Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ct in Model.ColmenaTratamientos.OrderByDescending(ct => ct.FechaAplicacion))
+                            {
+                                <tr>
+                                    <td><strong>@ct.Tratamiento?.Medicamento</strong></td>
+                                    <td>@ct.Tratamiento?.Dosis</td>
+                                    <td>@ct.FechaAplicacion.ToString("dd/MM/yyyy")</td>
+                                    <td>@ct.Tratamiento?.FechaInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@ct.Tratamiento?.FechaFin.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-center">
+                                        <a asp-controller="Tratamientos" asp-action="Details" asp-route-id="@ct.TratamientoId" class="btn btn-sm btn-link text-warning p-0 fw-bold">Ver</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Esta colmena no tiene tratamientos sanitarios registrados.</p>
+            }
+        </div>
+
+        <!-- Cosechas asociadas -->
+        <div class="card shadow-sm p-4">
+            <h3 class="mb-3 text-warning"><i class="bi bi-basket-fill"></i> Cosechas de esta Colmena (@Model.ColmenaCosechas.Count)</h3>
+            @if (Model.ColmenaCosechas.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Cosecha N°</th>
+                                <th>Fecha de Cosecha</th>
+                                <th>Lote</th>
+                                <th>Peso Total de la Cosecha</th>
+                                <th class="text-center">Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cc in Model.ColmenaCosechas)
+                            {
+                                <tr>
+                                    <td>#@cc.Cosecha?.Id</td>
+                                    <td>@cc.Cosecha?.FechaCosecha.ToString("dd/MM/yyyy")</td>
+                                    <td>@cc.Cosecha?.Lote</td>
+                                    <td><strong>@cc.Cosecha?.KgTotal kg</strong></td>
+                                    <td class="text-center">
+                                        <a asp-controller="Cosechas" asp-action="Details" asp-route-id="@cc.CosechaId" class="btn btn-sm btn-link text-warning p-0 fw-bold">Ver Cosecha</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Esta colmena no ha sido partícipe de ninguna cosecha registrada todavía.</p>
+            }
+        </div>
+    </div>
+</div>

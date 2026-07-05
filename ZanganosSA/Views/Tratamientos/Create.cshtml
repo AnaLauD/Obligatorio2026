@@ -1,0 +1,80 @@
+@model ZanganosSA.Models.Tratamiento
+
+@{
+    ViewData["Title"] = "Nuevo Tratamiento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-plus-circle text-warning"></i> Nuevo Tratamiento Sanitario</h2>
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="Id" class="form-label fw-bold">Id del Tratamiento</label>
+                    <input asp-for="Id" class="form-control" type="number" placeholder="Ej: 805" required />
+                    <span asp-validation-for="Id" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Medicamento" class="form-label fw-bold">Medicamento</label>
+                    <input asp-for="Medicamento" class="form-control" placeholder="Ej: Oxálico, Amitraz..." required />
+                    <span asp-validation-for="Medicamento" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Dosis" class="form-label fw-bold">Dosis</label>
+                    <input asp-for="Dosis" class="form-control" placeholder="Ej: 50g, 2 tiras..." />
+                    <span asp-validation-for="Dosis" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="FechaInicio" class="form-label fw-bold">Fecha de Inicio</label>
+                    <input asp-for="FechaInicio" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="FechaInicio" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="FechaFin" class="form-label fw-bold">Fecha de Fin</label>
+                    <input asp-for="FechaFin" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="FechaFin" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="DuracionDias" class="form-label fw-bold">Duración (días)</label>
+                    <input asp-for="DuracionDias" class="form-control" type="number" min="1" placeholder="Ej: 14" />
+                    <span asp-validation-for="DuracionDias" class="text-danger small"></span>
+                </div>
+
+                <!-- Selección de Colmenas -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Colmenas a tratar</label>
+                    <div id="colmenas-container" class="border rounded p-3 bg-white" style="max-height: 220px; overflow-y: auto;">
+                        @if (ViewBag.Colmenas != null)
+                        {
+                            var colmenasGrouped = ((List<ZanganosSA.Models.Colmena>)ViewBag.Colmenas).GroupBy(c => c.Apiario!.Departamento);
+                            foreach (var group in colmenasGrouped)
+                            {
+                                <div class="fw-bold text-success border-bottom pb-1 mb-2">Apiario: @group.Key</div>
+                                foreach (var colmena in group)
+                                {
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="selectedColmenas" value="@colmena.Id" id="colmena_@colmena.Id">
+                                        <label class="form-check-label" for="colmena_@colmena.Id">
+                                            <strong>Colmena #@colmena.Id</strong> 
+                                            <span class="text-muted small">(Tipo: @colmena.TipoCaja | Estado: @colmena.EstadoColmena)</span>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save"></i> Guardar</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

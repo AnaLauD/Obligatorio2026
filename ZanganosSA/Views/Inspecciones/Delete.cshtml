@@ -1,0 +1,28 @@
+@model ZanganosSA.Models.Inspeccion
+@{
+    ViewData["Title"] = "Eliminar Inspección";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4 border-danger">
+            <h2 class="mb-2 text-danger"><i class="bi bi-exclamation-triangle"></i> Eliminar Inspección</h2>
+            <p class="text-muted mb-4">¿Estás seguro de que deseas eliminar este registro de inspección? Esta acción no se puede deshacer.</p>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Inspección N°</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Colmena N°</dt>
+                <dd class="col-sm-8">#@Model.ColmenaId</dd>
+                <dt class="col-sm-4 fw-bold">Fecha y Hora</dt>
+                <dd class="col-sm-8">@Model.FechaHora.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4 fw-bold">Estado de Colmena</dt>
+                <dd class="col-sm-8">@Model.EstadoColmena</dd>
+            </dl>
+            <form asp-action="Delete" class="d-flex gap-2 mt-3">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-trash"></i> Sí, eliminar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>

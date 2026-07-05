@@ -1,0 +1,30 @@
+@model ZanganosSA.Models.Barril
+
+@{
+    ViewData["Title"] = "Detalles del Barril";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-eye text-warning"></i> Detalles del Barril</h2>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Id Barril</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Cosecha Lote</dt>
+                <dd class="col-sm-8">@Model.Cosecha?.Lote (Cosecha #@Model.CosechaId)</dd>
+                <dt class="col-sm-4 fw-bold">Peso</dt>
+                <dd class="col-sm-8">@Model.PesoKg kg</dd>
+                <dt class="col-sm-4 fw-bold">Estado</dt>
+                <dd class="col-sm-8">@Model.Estado</dd>
+                <dt class="col-sm-4 fw-bold">Destino</dt>
+                <dd class="col-sm-8">@Model.Destino</dd>
+            </dl>
+            <div class="d-flex gap-2 mt-3">
+                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning fw-bold"><i class="bi bi-pencil"></i> Editar</a>
+                <a asp-action="Trazabilidad" asp-route-id="@Model?.Id" class="btn btn-success fw-bold"><i class="bi bi-qr-code"></i> Trazabilidad (QR)</a>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>

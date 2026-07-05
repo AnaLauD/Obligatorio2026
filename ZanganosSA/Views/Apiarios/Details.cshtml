@@ -1,0 +1,110 @@
+@model ZanganosSA.Models.Apiario
+
+@{
+    ViewData["Title"] = "Detalles del Apiario";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card shadow-sm p-4 mb-4">
+            <h2 class="mb-4 text-warning"><i class="bi bi-geo-alt-fill"></i> Detalles del Apiario: @Model.Departamento</h2>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <p class="mb-1 fw-bold">Departamento:</p>
+                    <p class="fs-5 text-muted">@Model.Departamento</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1 fw-bold">Seccional Policial:</p>
+                    <p class="fs-5 text-muted"><i class="bi bi-shield-check text-warning"></i> @Model.SeccionalPolicial</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1 fw-bold">Fecha de Registro:</p>
+                    <p class="fs-5 text-muted">@Model.FechaRegistro.ToString("dd/MM/yyyy")</p>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p class="mb-1 fw-bold">Latitud:</p>
+                    <p class="fs-5 text-muted">@Model.Latitud</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1 fw-bold">Longitud:</p>
+                    <p class="fs-5 text-muted">@Model.Longitud</p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning fw-bold"><i class="bi bi-pencil"></i> Editar Apiario</a>
+                <a asp-action="Index" class="btn-paginado-dorado"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+            </div>
+        </div>
+
+        <!-- Colmenas en este Apiario -->
+        <div class="card shadow-sm p-4 mb-4">
+            <h3 class="mb-3 text-warning"><i class="bi bi-box-seam"></i> Colmenas en este Apiario (@Model.Colmenas.Count)</h3>
+            @if (Model.Colmenas.Any())
+            {
+                <div class="row">
+                    @foreach (var colmena in Model.Colmenas)
+                    {
+                        var badgeClass = colmena.EstadoColmena == "Fuerte" ? "bg-success" : (colmena.EstadoColmena == "Critica" || colmena.EstadoColmena == "Debil" ? "bg-danger" : "bg-warning text-dark");
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100 bg-white shadow-xs">
+                                <h5 class="fw-bold">Colmena #@colmena.Id</h5>
+                                <p class="mb-1 small">Tipo Caja: <span class="text-muted">@colmena.TipoCaja</span></p>
+                                <p class="mb-1 small">Estado Colmena: <span class="badge @badgeClass">@colmena.EstadoColmena</span></p>
+                                <p class="mb-1 small">Reina: <span class="text-muted">@colmena.ReinaEstado</span></p>
+                                <p class="mb-1 small">Activa: <span class="badge @(colmena.Activa ? "bg-success" : "bg-secondary")">@(colmena.Activa ? "Sí" : "No")</span></p>
+                                <div class="mt-2 text-end">
+                                    <a asp-controller="Colmenas" asp-action="Details" asp-route-id="@colmena.Id" class="btn btn-sm btn-link text-warning p-0 fw-bold">Ver Detalles <i class="bi bi-chevron-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No hay colmenas registradas en este apiario.</p>
+            }
+        </div>
+
+        <!-- Alimentaciones en este Apiario -->
+        <div class="card shadow-sm p-4">
+            <h3 class="mb-3 text-warning"><i class="bi bi-calendar-event"></i> Alimentaciones Suplementarias Programadas (@Model.Alimentaciones.Count)</h3>
+            @if (Model.Alimentaciones.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Fecha Programada</th>
+                                <th>Tipo de Alimento</th>
+                                <th>Cantidad (kg)</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var alim in Model.Alimentaciones.OrderByDescending(a => a.FechaProgramada))
+                            {
+                                <tr>
+                                    <td>@alim.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                                    <td>@alim.TipoAlimento</td>
+                                    <td><strong>@(alim.Cantidad.HasValue ? $"{alim.Cantidad} kg" : "No especificada")</strong></td>
+                                    <td class="text-center">
+                                        <a asp-controller="Alimentacion" asp-action="Details" asp-route-id="@alim.Id" class="btn btn-sm btn-link text-warning p-0 fw-bold">Ver Alimentación</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No hay alimentaciones programadas para este apiario.</p>
+            }
+        </div>
+    </div>
+</div>

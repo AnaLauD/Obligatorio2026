@@ -1,0 +1,29 @@
+@model ZanganosSA.Models.Cosecha
+
+@{
+    ViewData["Title"] = "Eliminar Cosecha";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4 border-danger">
+            <h2 class="mb-2 text-danger"><i class="bi bi-exclamation-triangle"></i> Eliminar Cosecha</h2>
+            <p class="text-muted mb-4">¿Estás seguro de que deseas eliminar esta cosecha? Esta acción no se puede deshacer.</p>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Lote</dt>
+                <dd class="col-sm-8">@Model.Lote</dd>
+                <dt class="col-sm-4 fw-bold">Fecha de Cosecha</dt>
+                <dd class="col-sm-8">@Model.FechaCosecha.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4 fw-bold">Peso Total</dt>
+                <dd class="col-sm-8">@Model.KgTotal kg</dd>
+                <dt class="col-sm-4 fw-bold">Observaciones</dt>
+                <dd class="col-sm-8">@Model.Observaciones</dd>
+            </dl>
+            <form asp-action="Delete" class="d-flex gap-2 mt-3">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-trash"></i> Sí, eliminar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,34 @@
+@model ZanganosSA.Models.Inspeccion
+@{
+    ViewData["Title"] = "Detalles de la Inspección";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-eye text-warning"></i> Detalles de la Inspección</h2>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Inspección N°</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Colmena N°</dt>
+                <dd class="col-sm-8">#@Model.ColmenaId</dd>
+                <dt class="col-sm-4 fw-bold">Apiario (Depto)</dt>
+                <dd class="col-sm-8">@Model.Colmena?.Apiario?.Departamento</dd>
+                <dt class="col-sm-4 fw-bold">Fecha y Hora</dt>
+                <dd class="col-sm-8">@Model.FechaHora.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4 fw-bold">Estado de Colmena</dt>
+                <dd class="col-sm-8">@Model.EstadoColmena</dd>
+                <dt class="col-sm-4 fw-bold">Estado de la Reina</dt>
+                <dd class="col-sm-8">@Model.EstadoReina</dd>
+                <dt class="col-sm-4 fw-bold">Población Estimada</dt>
+                <dd class="col-sm-8">@(Model.PoblacionEstimada.HasValue ? Model.PoblacionEstimada.Value.ToString("N0") : "N/A")</dd>
+                <dt class="col-sm-4 fw-bold">Observaciones</dt>
+                <dd class="col-sm-8">@Model.Observaciones</dd>
+            </dl>
+            <div class="d-flex gap-2 mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning fw-bold"><i class="bi bi-pencil"></i> Editar</a>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,225 @@
+@model ZanganosSA.Models.Apiario
+
+@{
+    ViewData["Title"] = "Declaración MGAP - " + Model.Departamento;
+    Layout = "_Layout";
+    var cosechas = ViewBag.Cosechas as List<Cosecha> ?? new List<Cosecha>();
+}
+
+<style>
+    @@media print {
+        header, footer, .navbar, .btn-print-bar, .footer {
+            display: none !important;
+        }
+        body {
+            background: white !important;
+        }
+        .card {
+            border: 1px solid #aaa !important;
+            box-shadow: none !important;
+        }
+        .table {
+            font-size: 11px;
+        }
+        .badge {
+            border: 1px solid #555;
+            color: #000 !important;
+            background: #eee !important;
+        }
+        .mgap-header-img {
+            display: block !important;
+        }
+    }
+    .mgap-header-img { display: none; }
+    .sello-declaracion {
+        border: 3px solid #0a3d62;
+        border-radius: 8px;
+        padding: 12px 24px;
+        display: inline-block;
+        text-align: center;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="btn-print-bar mb-3 d-flex gap-2 align-items-center">
+    <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer-fill"></i> Imprimir / Guardar como PDF</button>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver a Apiarios</a>
+    <span class="text-muted small ms-2">* Al imprimir, la barra de navegación se ocultará automáticamente para dejar solo el documento.</span>
+</div>
+
+<div class="card shadow p-4" id="reporte-mgap">
+
+    <!-- ENCABEZADO OFICIAL -->
+    <div class="row align-items-center border-bottom pb-3 mb-4">
+        <div class="col-md-2 text-center">
+            <i class="bi bi-shield-fill-check" style="font-size: 60px; color: #0a3d62;"></i>
+        </div>
+        <div class="col-md-8 text-center">
+            <h4 class="fw-bold text-uppercase mb-0" style="color: #0a3d62;">República Oriental del Uruguay</h4>
+            <h5 class="text-muted mb-0">Ministerio de Ganadería, Agricultura y Pesca</h5>
+            <h3 class="fw-bold mt-2">Declaración Jurada de Apiario</h3>
+            <p class="mb-0 text-muted small">Formulario de Registro y Control Apícola | Sistema MGAP</p>
+        </div>
+        <div class="col-md-2 text-end text-muted small">
+            <strong>Fecha de Generación:</strong><br />
+            @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+        </div>
+    </div>
+
+    <!-- SECCIÓN 1: DATOS DEL APIARIO -->
+    <h5 class="fw-bold border-bottom pb-1 mb-3" style="color: #0a3d62;">
+        <i class="bi bi-geo-alt-fill"></i> Sección 1 — Identificación del Apiario
+    </h5>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <table class="table table-bordered table-sm">
+                <tr><th style="width:45%; background:#f0f4f8;">ID del Sistema</th><td><strong>#@Model.Id</strong></td></tr>
+                <tr><th style="background:#f0f4f8;">Departamento</th><td><strong>@Model.Departamento</strong></td></tr>
+                <tr><th style="background:#f0f4f8;">Seccional Policial</th><td>@Model.SeccionalPolicial</td></tr>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <table class="table table-bordered table-sm">
+                <tr><th style="width:45%; background:#f0f4f8;">Coordenadas GPS</th><td><code>@(Model.Latitud.HasValue && Model.Longitud.HasValue ? $"{Model.Latitud}, {Model.Longitud}" : "No registradas")</code></td></tr>
+                <tr><th style="background:#f0f4f8;">Total de Colmenas</th><td><span class="badge bg-success">@Model.Colmenas.Count colmenas</span></td></tr>
+                <tr><th style="background:#f0f4f8;">Titular / Productor</th><td>Matías — Zánganos SA</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: INVENTARIO DE COLMENAS -->
+    <h5 class="fw-bold border-bottom pb-1 mb-3" style="color: #0a3d62;">
+        <i class="bi bi-boxes"></i> Sección 2 — Inventario de Colmenas
+    </h5>
+    @if (Model.Colmenas.Any())
+    {
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Tipo Caja</th>
+                        <th>Estado General</th>
+                        <th>Estado Reina</th>
+                        <th>Activa</th>
+                        <th>Observaciones</th>
+                        <th>Tratamientos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var colmena in Model.Colmenas)
+                    {
+                        <tr>
+                            <td>@colmena.Id</td>
+                            <td>@colmena.TipoCaja</td>
+                            <td>
+                                @{
+                                    string badgeColor = colmena.EstadoColmena switch {
+                                        "Fuerte" => "bg-success",
+                                        "Media" => "bg-primary",
+                                        "Debil" => "bg-warning text-dark",
+                                        "Critica" => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeColor">@colmena.EstadoColmena</span>
+                             </td>
+                             <td>@colmena.ReinaEstado</td>
+                             <td><span class="badge @(colmena.Activa ? "bg-success" : "bg-secondary")">@(colmena.Activa ? "Sí" : "No")</span></td>
+                             <td>@colmena.Observaciones</td>
+                             <td>@colmena.ColmenaTratamientos.Count</td>
+                         </tr>
+                     }
+                 </tbody>
+             </table>
+         </div>
+     }
+     else
+     {
+         <div class="alert alert-warning">Este apiario no tiene colmenas registradas.</div>
+     }
+
+    <!-- SECCIÓN 3: HISTORIAL DE COSECHAS Y TRAZABILIDAD DE BARRILES -->
+    <h5 class="fw-bold border-bottom pb-1 mb-3" style="color: #0a3d62;">
+        <i class="bi bi-basket-fill"></i> Sección 3 — Historial de Cosechas y Trazabilidad de Exportación
+    </h5>
+    @if (cosechas.Any())
+    {
+        @foreach (var cosecha in cosechas)
+        {
+            <div class="card border mb-3">
+                <div class="card-header bg-light d-flex justify-content-between">
+                    <span><i class="bi bi-calendar-check"></i> <strong>Cosecha del @cosecha.FechaCosecha.ToString("dd/MM/yyyy") (Lote: @cosecha.Lote)</strong></span>
+                    <span class="badge bg-success">@cosecha.KgTotal kg estimados</span>
+                </div>
+                @if (cosecha.Barriles.Any())
+                {
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Id Barril</th>
+                                    <th>Peso Neto (kg)</th>
+                                    <th>Estado</th>
+                                    <th>Destino</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var barril in cosecha.Barriles)
+                                {
+                                    <tr>
+                                        <td>#@barril.Id</td>
+                                        <td>@barril.PesoKg kg</td>
+                                        <td>@barril.Estado</td>
+                                        <td>@barril.Destino</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-body text-muted small">Sin barriles envasados para esta cosecha.</div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">No hay cosechas registradas para este apiario.</div>
+    }
+
+    <!-- SECCIÓN 4: DECLARACIÓN JURADA Y FIRMA -->
+    <h5 class="fw-bold border-bottom pb-1 mb-3 mt-4" style="color: #0a3d62;">
+        <i class="bi bi-pen-fill"></i> Sección 4 — Declaración y Firma del Titular
+    </h5>
+    <p class="text-justify">
+        Por medio de la presente declaración jurada, el titular <strong>Matías — Zánganos SA</strong>, con apiario radicado 
+        en la Seccional Policial <strong>@Model.SeccionalPolicial</strong>, departamento de <strong>@Model.Departamento</strong>, 
+        declara que toda la información volcada en este formulario es veraz, completa y se corresponde con el estado 
+        real de las unidades productivas al día de la fecha, en cumplimiento de las normativas vigentes del 
+        Ministerio de Ganadería, Agricultura y Pesca (MGAP) de la República Oriental del Uruguay.
+    </p>
+
+    <div class="row mt-4">
+        <div class="col-md-4 text-center">
+            <div style="border-top: 1px solid #333; margin-top: 60px; padding-top: 8px;">
+                Firma del Titular
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="sello-declaracion">
+                <p class="mb-1 small text-muted">Generado por SGAI - Zánganos SA</p>
+                <p class="mb-0 fw-bold">@DateTime.Now.ToString("dd/MM/yyyy")</p>
+                <p class="mb-0 small"><i class="bi bi-check-circle-fill text-success"></i> Datos verificados por el sistema</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div style="border-top: 1px solid #333; margin-top: 60px; padding-top: 8px;">
+                Sello / Aclaración
+            </div>
+        </div>
+    </div>
+
+</div>

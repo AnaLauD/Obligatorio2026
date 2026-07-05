@@ -1,0 +1,33 @@
+@model ZanganosSA.Models.Tratamiento
+
+@{
+    ViewData["Title"] = "Eliminar Tratamiento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4 border-danger">
+            <h2 class="mb-2 text-danger"><i class="bi bi-exclamation-triangle"></i> Eliminar Tratamiento</h2>
+            <p class="text-muted mb-4">¿Estás seguro de que deseas eliminar este tratamiento? Esta acción no se puede deshacer.</p>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Id Tratamiento</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Medicamento</dt>
+                <dd class="col-sm-8">@Model.Medicamento</dd>
+                <dt class="col-sm-4 fw-bold">Dosis</dt>
+                <dd class="col-sm-8">@Model.Dosis</dd>
+                <dt class="col-sm-4 fw-bold">Fecha de Inicio</dt>
+                <dd class="col-sm-8">@Model.FechaInicio.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4 fw-bold">Fecha de Fin</dt>
+                <dd class="col-sm-8">@Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4 fw-bold">Duración</dt>
+                <dd class="col-sm-8">@(Model.DuracionDias.HasValue ? $"{Model.DuracionDias} días" : "N/A")</dd>
+            </dl>
+            <form asp-action="Delete" class="d-flex gap-2 mt-3">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-trash"></i> Sí, eliminar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>

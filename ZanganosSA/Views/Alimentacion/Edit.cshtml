@@ -1,0 +1,40 @@
+@model ZanganosSA.Models.Alimentacion
+@{
+    ViewData["Title"] = "Editar Alimentación";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-pencil text-info"></i> Editar Alimentación</h2>
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="mb-3">
+                    <label asp-for="ApiarioId" class="form-label fw-bold">Apiario</label>
+                    <select asp-for="ApiarioId" class="form-select" asp-items="ViewBag.ApiarioId" required></select>
+                    <span asp-validation-for="ApiarioId" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="TipoAlimento" class="form-label fw-bold">Tipo de Alimento</label>
+                    <input asp-for="TipoAlimento" class="form-control" required />
+                    <span asp-validation-for="TipoAlimento" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="FechaProgramada" class="form-label fw-bold">Fecha Programada</label>
+                    <input asp-for="FechaProgramada" class="form-control" type="date" required />
+                    <span asp-validation-for="FechaProgramada" class="text-danger small"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Cantidad" class="form-label fw-bold">Cantidad (kg)</label>
+                    <input asp-for="Cantidad" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="Cantidad" class="text-danger small"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-info text-white fw-bold"><i class="bi bi-save"></i> Guardar Cambios</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,583 @@
+@using ZanganosSA.Models
+@{
+    ViewData["Title"] = "Simulador BeeSimulator";
+    var apiarios = ViewBag.Apiarios as List<Apiario> ?? new List<Apiario>();
+    var selectedId = ViewBag.SelectedApiarioId as int?;
+    var apiario = ViewBag.Apiario as Apiario;
+}
+
+<style>
+    /* Estilos Premium del Simulador */
+    .simulator-container {
+        background: linear-gradient(135deg, #fdfbf7 0%, #f5eedc 100%);
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        border: 1px solid rgba(230, 92, 0, 0.1);
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(230, 150, 0, 0.1);
+    }
+    
+    .honey-progress {
+        height: 20px;
+        border-radius: 10px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .honey-progress-bar {
+        background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .health-progress-bar {
+        background: linear-gradient(90deg, #4caf50 0%, #2e7d32 100%);
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .risk-badge {
+        font-size: 1.2rem;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-block;
+        transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    .risk-bajo {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .risk-medio {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+
+    .risk-alto {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+    
+    /* Controladores slider */
+    .slider-label {
+        font-weight: 600;
+        color: #5c3d2e;
+    }
+    
+    .form-range::-webkit-slider-thumb {
+        background: #ff9800;
+    }
+    .form-range::-moz-range-thumb {
+        background: #ff9800;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-5 text-warning fw-bold"><i class="bi bi-cpu-fill"></i> BeeSimulator</h1>
+            <p class="lead text-muted">Simulador Predictivo de Salud y Rendimiento del Apiario a 30 Días</p>
+            <hr class="w-25 mx-auto" />
+        </div>
+    </div>
+
+    <!-- SELECTOR DE APIARIO -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 p-3">
+                <form method="get" action="@Url.Action("Index", "Simulador")">
+                    <label class="form-label fw-bold text-dark"><i class="bi bi-geo-alt-fill text-warning"></i> Selecciona un Apiario para simular:</label>
+                    <div class="input-group">
+                        <select name="id" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Seleccionar Apiario --</option>
+                            @foreach (var ap in apiarios)
+                            {
+                                <!option value="@ap.Id" @(selectedId == ap.Id ? "selected" : "")>
+                                    Apiario #@ap.Id - @ap.Departamento (@ap.SeccionalPolicial)
+                                </!option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-play-circle"></i> Cargar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (apiario == null)
+    {
+        <!-- PANTALLA DE BIENVENIDA / INSTRUCTIVO -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm text-center p-5 bg-white">
+                    <div class="mb-4">
+                        <i class="bi bi-activity text-warning" style="font-size: 80px;"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">Simulación de Sanidad Inteligente</h3>
+                    <p class="text-muted fs-5">
+                        Esta herramienta cruza las inspecciones de la reina, tratamientos activos, y cronograma de alimentación de un apiario para proyectar su rendimiento y evaluar el riesgo de colapso en un plazo de 30 días.
+                    </p>
+                    <div class="alert alert-info text-start border-0 shadow-sm mt-4">
+                        <h6 class="fw-bold"><i class="bi bi-lightbulb-fill"></i> ¿Cómo funciona el simulador?</h6>
+                        <ul class="mb-0 small">
+                            <li><strong>Evaluación de reina:</strong> El estado de la reina (Ausente/Vieja) es el principal factor de supervivencia de la colmena.</li>
+                            <li><strong>Alimentación y Temperatura:</strong> Factores nutricionales y de clima definen la postura y cría de abejas.</li>
+                            <li><strong>Tratamientos activos:</strong> El control a tiempo de patógenos (Varroa) previene el decaimiento.</li>
+                        </ul>
+                    </div>
+                    <p class="text-muted mt-3">Por favor, selecciona uno de los apiarios activos en el menú superior para comenzar.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- SIMULADOR ACTIVO -->
+        <div class="card p-4 border-0 shadow simulator-container">
+            <div class="row align-items-center mb-4 border-bottom pb-3">
+                <div class="col-md-8">
+                    <h3 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-activity text-warning"></i> Simulación en Curso: Apiario #@apiario.Id
+                    </h3>
+                    <p class="text-muted mb-0">Ubicado en <strong>@apiario.Departamento (@apiario.SeccionalPolicial)</strong></p>
+                </div>
+                <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                    <span class="badge bg-secondary p-2"><i class="bi bi-clock-history"></i> Proyección a 30 Días</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- CONTROLES (IZQUIERDA) -->
+                <div class="col-lg-5 mb-4">
+                    <div class="card border-0 shadow-sm p-4 glass-card h-100">
+                        <h5 class="fw-bold border-bottom pb-2 text-warning"><i class="bi bi-sliders"></i> Ajustes de Simulación</h5>
+                        <p class="text-muted small">Modifica las variables ambientales y de manejo para recalcular los resultados en tiempo real.</p>
+                        
+                        <!-- Temperatura -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <label for="tempSlider" class="slider-label">Temperatura Promedio</label>
+                                <span class="badge bg-warning text-dark fw-bold" id="tempDisplay">22°C</span>
+                            </div>
+                            <input type="range" class="form-range" id="tempSlider" min="10" max="35" value="22" step="1">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>10°C (Frío)</span>
+                                <span>22°C (Óptimo)</span>
+                                <span>35°C (Calor)</span>
+                            </div>
+                        </div>
+
+                        <!-- Floración -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <label for="floraSlider" class="slider-label">Disponibilidad de Floración</label>
+                                <span class="badge bg-warning text-dark fw-bold" id="floraDisplay">70%</span>
+                            </div>
+                            <input type="range" class="form-range" id="floraSlider" min="0" max="100" value="70" step="5">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>0% (Escasez)</span>
+                                <span>70% (Buena)</span>
+                                <span>100% (Excelente)</span>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Toggles de Manejo -->
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check"></i> Intervenciones Sanitarias y de Manejo</h6>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="varroaCheck">
+                            <label class="form-check-label fw-bold text-dark" for="varroaCheck">
+                                <i class="bi bi-virus text-danger"></i> Aplicar tratamiento de Varroa hoy
+                            </label>
+                            <div class="text-muted small">Reduce el riesgo de ácaros e incrementa la salud general (+15% salud).</div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="feedCheck">
+                            <label class="form-check-label fw-bold text-dark" for="feedCheck">
+                                <i class="bi bi-droplet-half text-primary"></i> Programar alimentación suplementaria
+                            </label>
+                            <div class="text-muted small">Garantiza reservas de energía ante escasez de flora (+15% salud).</div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="queenCheck">
+                            <label class="form-check-label fw-bold text-dark" for="queenCheck">
+                                <i class="bi bi-award text-success"></i> Reemplazar reinas ausentes/viejas
+                            </label>
+                            <div class="text-muted small">Sustituye reinas débiles por jóvenes vigorosas (+postura de huevos).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESULTADOS / GRÁFICOS (DERECHA) -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card border-0 shadow-sm p-4 glass-card h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold border-bottom pb-2 text-warning"><i class="bi bi-graph-up"></i> Resultados Predictivos (30 Días)</h5>
+                            
+                            <!-- Estimado de salud -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark">Estimado de Abejas Saludables (Salud Promedio)</span>
+                                    <span class="fw-bold text-success fs-5" id="healthDisplay">0%</span>
+                                </div>
+                                <div class="honey-progress">
+                                    <div class="health-progress-bar" id="healthBar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Proyección de Miel -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark">Proyección de Cosecha de Miel</span>
+                                    <span class="fw-bold text-warning fs-5" id="honeyDisplay">0 kg</span>
+                                </div>
+                                <div class="honey-progress">
+                                    <div class="honey-progress-bar" id="honeyBar" style="width: 0%;"></div>
+                                </div>
+                                <div class="text-muted small mt-1">Calculado en base al historial de cosechas del apiario y la salud simulada.</div>
+                            </div>
+
+                            <div class="row text-center mb-2">
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="text-muted small uppercase fw-bold">Población Total Estimada</div>
+                                        <div class="fs-3 fw-bold text-success mt-1" id="popDisplay">0</div>
+                                        <div class="small text-muted">Abejas en total en el apiario</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="text-muted small uppercase fw-bold">Riesgo del Apiario</div>
+                                        <div class="mt-2">
+                                            <span class="risk-badge risk-bajo" id="riskBadge">BAJO</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning border-0 mb-0 shadow-sm" id="riskAlert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> 
+                            <span id="riskAlertText">Evaluando el estado actual...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE POR COLMENA -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm p-4 glass-card">
+                        <h5 class="fw-bold border-bottom pb-2 mb-3 text-warning"><i class="bi bi-grid-3x3-gap"></i> Proyección Detallada por Colmena</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Estado Actual</th>
+                                        <th>Reina</th>
+                                        <th>Pop. Actual (Est.)</th>
+                                        <th>Salud Simulada</th>
+                                        <th>Pop. Simulada (30d)</th>
+                                        <th>Estado Proyectado</th>
+                                        <th>Mensaje de Diagnóstico</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="colmenasTableBody">
+                                    <!-- Dinámico por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (apiario != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Cargar datos inyectados por el controlador
+            const colmenas = @Html.Raw(ViewBag.ColmenasJson);
+            const alimentaciones = @Html.Raw(ViewBag.AlimentacionesJson);
+            const cosechas = @Html.Raw(ViewBag.CosechasJson);
+
+            // Controles del DOM
+            const tempSlider = document.getElementById("tempSlider");
+            const tempDisplay = document.getElementById("tempDisplay");
+            const floraSlider = document.getElementById("floraSlider");
+            const floraDisplay = document.getElementById("floraDisplay");
+            const varroaCheck = document.getElementById("varroaCheck");
+            const feedCheck = document.getElementById("feedCheck");
+            const queenCheck = document.getElementById("queenCheck");
+
+            // Elementos de pantalla de resultados
+            const healthDisplay = document.getElementById("healthDisplay");
+            const healthBar = document.getElementById("healthBar");
+            const honeyDisplay = document.getElementById("honeyDisplay");
+            const honeyBar = document.getElementById("honeyBar");
+            const popDisplay = document.getElementById("popDisplay");
+            const riskBadge = document.getElementById("riskBadge");
+            const riskAlert = document.getElementById("riskAlert");
+            const riskAlertText = document.getElementById("riskAlertText");
+            const colmenasTableBody = document.getElementById("colmenasTableBody");
+
+            // Determinar promedio de producción histórica del apiario por colmena
+            let avgHoneyPerColmena = 25.0; // Baseline por defecto (25 kg)
+            if (cosechas.length > 0 && colmenas.length > 0) {
+                let totalCosechado = cosechas.reduce((sum, c) => sum + parseFloat(c.KgTotal), 0);
+                // Dividir entre cantidad de cosechas e historial
+                avgHoneyPerColmena = totalCosechado / (colmenas.length * cosechas.length);
+                if (avgHoneyPerColmena < 10) avgHoneyPerColmena = 15; // Mínimo lógico
+                if (avgHoneyPerColmena > 50) avgHoneyPerColmena = 45; // Máximo lógico
+            }
+
+            function runSimulation() {
+                const temp = parseInt(tempSlider.value);
+                const flora = parseInt(floraSlider.value);
+                const applyTreatment = varroaCheck.checked;
+                const applyFeed = feedCheck.checked;
+                const replaceQueens = queenCheck.checked;
+
+                // Actualizar displays
+                tempDisplay.innerText = `${temp}°C`;
+                floraDisplay.innerText = `${flora}%`;
+
+                let totalCurrentPop = 0;
+                let totalProjPop = 0;
+                let totalHealthScore = 0;
+                let tableHtml = "";
+
+                colmenas.forEach(c => {
+                    if (!c.Activa) {
+                        // Colmena inactiva
+                        tableHtml += `
+                            <tr class="table-secondary opacity-75">
+                                <td><strong>#${c.Id}</strong></td>
+                                <td><span class="badge bg-secondary">Inactiva</span></td>
+                                <td>-</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td><span class="badge bg-secondary">Inactiva</span></td>
+                                <td class="text-muted small">Colmena archivada o inactiva en el sistema.</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    totalCurrentPop += c.Poblacion;
+
+                    // Lógica predictiva por colmena
+                    let baseHealth = 70; // Media
+                    if (c.Estado === "Fuerte") baseHealth = 92;
+                    else if (c.Estado === "Debil") baseHealth = 45;
+                    else if (c.Estado === "Critica") baseHealth = 15;
+
+                    // Ajuste por reina
+                    let reinaEstado = c.Reina;
+                    let reinaBonus = 0;
+
+                    if (replaceQueens) {
+                        reinaEstado = "Joven";
+                        reinaBonus = 12; // Reemplazada por joven vigorosa
+                    } else {
+                        if (c.Reina === "Joven") reinaBonus = 10;
+                        else if (c.Reina === "Sana") reinaBonus = 5;
+                        else if (c.Reina === "Vieja") reinaBonus = -20;
+                        else if (c.Reina === "Ausente") reinaBonus = -55;
+                    }
+
+                    // Ajuste por tratamiento Varroa
+                    let treatmentBonus = 0;
+                    if (applyTreatment) {
+                        treatmentBonus = 15;
+                    } else {
+                        if (c.DiasUltimoTratamiento !== null) {
+                            if (c.DiasUltimoTratamiento <= 30) treatmentBonus = 10;
+                            else if (c.DiasUltimoTratamiento <= 60) treatmentBonus = 0;
+                            else treatmentBonus = -12; // Tratamiento vencido hace más de 60 días
+                        } else {
+                            treatmentBonus = -15; // Sin historial de tratamientos
+                        }
+                    }
+
+                    // Ajuste por alimentación
+                    let feedBonus = -5; // Estrés nutricional base si no hay nada
+                    if (applyFeed) {
+                        feedBonus = 15;
+                    } else {
+                        // Buscar si hay alimentación programada reciente
+                        if (alimentaciones.length > 0) {
+                            feedBonus = 8;
+                        }
+                    }
+
+                    // Clima (Temperatura)
+                    let tempBonus = 0;
+                    if (temp >= 19 && temp <= 26) {
+                        tempBonus = 6; // Óptima
+                    } else if (temp < 15) {
+                        tempBonus = -15; // Estrés por frío extremo
+                    } else if (temp > 30) {
+                        tempBonus = -10; // Calor extremo, abejas ventilan en vez de recolectar
+                    }
+
+                    // Flora
+                    let floraBonus = 0;
+                    if (flora >= 80) floraBonus = 10;
+                    else if (flora < 35) floraBonus = -20; // Hambre
+
+                    // Calcular score final de salud
+                    let projectedHealth = baseHealth + reinaBonus + treatmentBonus + feedBonus + tempBonus + floraBonus;
+                    if (projectedHealth > 100) projectedHealth = 100;
+                    if (projectedHealth < 5) projectedHealth = 5;
+
+                    totalHealthScore += projectedHealth;
+
+                    // Calcular población final proyectada
+                    let projectedPop = Math.round(c.Poblacion * (projectedHealth / baseHealth));
+                    
+                    // Colapso de población si la reina está ausente y no se reemplaza
+                    if (reinaEstado === "Ausente" && !replaceQueens) {
+                        projectedPop = Math.round(c.Poblacion * 0.15); // Disminución masiva
+                        if (projectedHealth > 30) projectedHealth = 25; // Fuerza salud baja
+                    }
+
+                    if (projectedPop > 65000) projectedPop = 65000; // Cap máximo
+                    if (projectedPop < 1500) projectedPop = 1000;   // Mínimo supervivencia
+                    
+                    totalProjPop += projectedPop;
+
+                    // Estado Proyectado
+                    let projState = "Media";
+                    let stateBadge = "bg-primary";
+                    if (projectedHealth >= 82) {
+                        projState = "Fuerte";
+                        stateBadge = "bg-success";
+                    } else if (projectedHealth < 30) {
+                        projState = "Crítica / Colapso";
+                        stateBadge = "bg-danger";
+                    } else if (projectedHealth < 55) {
+                        projState = "Débil";
+                        stateBadge = "bg-warning text-dark";
+                    }
+
+                    // Mensaje de Diagnóstico
+                    let diagnostic = "Estado estable.";
+                    if (reinaEstado === "Ausente") {
+                        diagnostic = "⚠️ Sin reina: la población morirá pronto.";
+                    } else if (projectedHealth < 35) {
+                        diagnostic = "❌ Riesgo severo de pérdida por estrés combinado.";
+                    } else if (applyTreatment && c.DiasUltimoTratamiento > 60) {
+                        diagnostic = "✓ Recuperándose gracias al tratamiento aplicado hoy.";
+                    } else if (temp < 15 && !applyFeed) {
+                        diagnostic = "❄️ Estrés frío: requiere jarabe energético urgente.";
+                    } else if (flora > 80 && projectedHealth > 75) {
+                        diagnostic = "✨ Óptima actividad por excelente floración.";
+                    }
+
+                    tableHtml += `
+                        <tr>
+                            <td><strong>#${c.Id}</strong></td>
+                            <td>${c.Estado}</td>
+                            <td>${reinaEstado}</td>
+                            <td>${c.Poblacion.toLocaleString()}</td>
+                            <td class="fw-bold text-${projectedHealth >= 75 ? 'success' : (projectedHealth < 40 ? 'danger' : 'warning')}">${Math.round(projectedHealth)}%</td>
+                            <td>${projectedPop.toLocaleString()}</td>
+                            <td><span class="badge ${stateBadge}">${projState}</span></td>
+                            <td class="small">${diagnostic}</td>
+                        </tr>
+                    `;
+                });
+
+                colmenasTableBody.innerHTML = tableHtml;
+
+                // Estadísticas globales del Apiario
+                const activeHives = colmenas.filter(c => c.Activa);
+                const activeCount = activeHives.length;
+                
+                let avgHealth = 0;
+                if (activeCount > 0) {
+                    avgHealth = totalHealthScore / activeCount;
+                }
+
+                healthDisplay.innerText = `${Math.round(avgHealth)}%`;
+                healthBar.style.width = `${avgHealth}%`;
+
+                // Proyección de miel
+                // Fórmula: Promedio del apiario * cantidad colmenas activas * factor salud promedio * factor floral * factor temperatura
+                let tempFactor = 1.0;
+                if (temp >= 19 && temp <= 26) tempFactor = 1.0;
+                else if (temp < 15 || temp > 30) tempFactor = 0.65;
+                else tempFactor = 0.85;
+
+                let floraFactor = flora / 70.0; // 70% es la flora base de referencia
+
+                let projHoney = activeCount * avgHoneyPerColmena * (avgHealth / 80.0) * floraFactor * tempFactor;
+                if (projHoney < 0) projHoney = 0;
+                projHoney = Math.round(projHoney);
+
+                // Escalar bar de miel relativo a una buena temporada (e.g. 50kg por colmena)
+                let maxPossibleHoney = activeCount * 45;
+                let honeyPercent = maxPossibleHoney > 0 ? (projHoney / maxPossibleHoney) * 100 : 0;
+                if (honeyPercent > 100) honeyPercent = 100;
+
+                honeyDisplay.innerText = `${projHoney} kg`;
+                honeyBar.style.width = `${honeyPercent}%`;
+
+                popDisplay.innerText = totalProjPop.toLocaleString();
+
+                // Nivel de Riesgo General
+                riskBadge.className = "risk-badge";
+                if (avgHealth >= 75) {
+                    riskBadge.innerText = "BAJO";
+                    riskBadge.classList.add("risk-bajo");
+                    riskAlert.className = "alert alert-success border-0 mb-0 shadow-sm";
+                    riskAlertText.innerHTML = "<strong>Apiario Seguro:</strong> El apiario muestra una proyección sólida a 30 días. Las condiciones de manejo y bioseguridad garantizan un rendimiento del 100%.";
+                } else if (avgHealth < 42) {
+                    riskBadge.innerText = "ALTO";
+                    riskBadge.classList.add("risk-alto");
+                    riskAlert.className = "alert alert-danger border-0 mb-0 shadow-sm";
+                    riskAlertText.innerHTML = "<strong>¡Peligro de Pérdida!:</strong> Al menos un 40% de las colmenas tienen riesgo de muerte. Se recomienda recambio inmediato de reinas ausentes o aplicación de tratamientos.";
+                } else {
+                    riskBadge.innerText = "MEDIO";
+                    riskBadge.classList.add("risk-medio");
+                    riskAlert.className = "alert alert-warning border-0 mb-0 shadow-sm text-dark";
+                    riskAlertText.innerHTML = "<strong>Atención Requerida:</strong> Hay factores estresores afectando el rendimiento. Ajustar la alimentación o sanitización mitigará los riesgos.";
+                }
+            }
+
+            // Registrar listeners
+            tempSlider.addEventListener("input", runSimulation);
+            floraSlider.addEventListener("input", runSimulation);
+            varroaCheck.addEventListener("change", runSimulation);
+            feedCheck.addEventListener("change", runSimulation);
+            queenCheck.addEventListener("change", runSimulation);
+
+            // Inicializar simulación
+            runSimulation();
+        });
+    </script>
+}

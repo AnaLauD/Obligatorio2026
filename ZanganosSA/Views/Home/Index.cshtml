@@ -1,0 +1,253 @@
+@model ZanganosSA.Models.HomeViewModel
+
+@{
+    ViewData["Title"] = "Dashboard - Zánganos SA";
+}
+
+<div class="text-center mb-4">
+    <img src="~/images/logo.png" alt="Zánganos SA Logo" class="mb-3" style="max-height: 120px;" asp-append-version="true" />
+    <h1 class="display-4 text-warning fw-bold">SGAI - Zánganos SA</h1>
+    <p class="lead">Sistema de Gestión Apícola Integral</p>
+    <div class="d-flex justify-content-center gap-3 mb-3">
+        <span class="badge bg-primary fs-6">Apiarios: @Model.TotalApiarios</span>
+        <span class="badge bg-success fs-6">Colmenas: @Model.TotalColmenas</span>
+        <span class="badge bg-secondary fs-6">Activas: @Model.ColmenasActivas</span>
+        <span class="badge bg-info fs-6">Inspecciones: @Model.TotalInspecciones</span>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row justify-content-center">
+        <div class="col-md-4 mb-2">
+            <div class="card text-white bg-success shadow-sm">
+                <div class="card-body py-2">
+                    <h6 class="card-title mb-1"><i class="bi bi-graph-up-arrow"></i> Producción Total de Miel</h6>
+                    <h4 class="mb-0">@Model.ProduccionTotalKg kg</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <div class="card text-dark bg-warning shadow-sm">
+                <div class="card-body py-2">
+                    <h6 class="card-title mb-1"><i class="bi bi-box-seam"></i> Colmenas Inactivas</h6>
+                    <h4 class="mb-0">@Model.ColmenasInactivas colmenas</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+</div>
+
+<!-- Panel de Alertas Sanitarias (ORIGINAL) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-danger shadow-sm">
+            <div class="card-header bg-danger text-white fw-bold">
+                <i class="bi bi-exclamation-triangle-fill"></i> Alertas Sanitarias y de Mantenimiento Activas
+            </div>
+            <ul class="list-group list-group-flush">
+
+                @* ---- TRATAMIENTOS ACTIVOS ---- *@
+                @if (Model.TratamientosActivos.Any())
+                {
+                    @foreach (var trat in Model.TratamientosActivos)
+                    {
+                        var diasRestantes = (int)(trat.FechaFin - DateTime.Now).TotalDays;
+                        string alertClass = diasRestantes <= 2 ? "list-group-item-danger" : "list-group-item-warning";
+
+                        <li class="list-group-item @alertClass d-flex justify-content-between align-items-center">
+                            <span>
+                                @{
+                                    var colmenasStr = trat.ColmenaTratamientos.Any()
+                                        ? string.Join(", ", trat.ColmenaTratamientos.Select(ct => $"Colmena #{ct.ColmenaId}"))
+                                        : "Sin colmena asignada";
+                                }
+                                <strong>Colmenas:</strong> @colmenasStr |
+                                <strong>Medicamento:</strong> @trat.Medicamento
+                                (Fin: @trat.FechaFin.ToString("dd/MM/yyyy"))
+                            </span>
+                            <div class="d-flex align-items-center gap-3">
+                                @if (diasRestantes < 0)
+                                {
+                                    <span class="badge bg-danger rounded-pill">VENCIDO (@Math.Abs(diasRestantes) días)</span>
+                                }
+                                else if (diasRestantes == 0)
+                                {
+                                    <span class="badge bg-danger rounded-pill">VENCE HOY</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill">Faltan @diasRestantes días</span>
+                                }
+                                <form asp-controller="Tratamientos" asp-action="MarcarCompletado" method="post" class="m-0 p-0">
+                                    <input type="hidden" name="id" value="@trat.Id" />
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill shadow-sm" title="Marcar como finalizado">
+                                        <i class="bi bi-check-circle-fill"></i> Completar
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="list-group-item text-muted">
+                        <i class="bi bi-check-circle text-success"></i> No hay tratamientos activos en este momento.
+                    </li>
+                }
+
+                @* ---- ALERTAS DE ALIMENTACIÓN ---- *@
+                @if (Model.ProximasAlimentaciones.Any())
+                {
+                    <li class="list-group-item list-group-item-info fw-bold text-center">
+                        <i class="bi bi-calendar-event"></i> Próximas Alimentaciones Programadas
+                    </li>
+                    @foreach (var alim in Model.ProximasAlimentaciones)
+                    {
+                        var diasAlimentacion = (int)(alim.FechaProgramada - DateTime.Today).TotalDays;
+                        string alertFeedClass = diasAlimentacion == 0 ? "list-group-item-warning" : "";
+                        <li class="list-group-item @alertFeedClass d-flex justify-content-between align-items-center">
+                            <span>
+                                <strong>Apiario:</strong> @alim.Apiario?.Departamento |
+                                <strong>Alimento:</strong> @alim.TipoAlimento
+                                @if (alim.Cantidad.HasValue)
+                                {
+                                    <span class="text-muted small">(@alim.Cantidad kg)</span>
+                                }
+                            </span>
+                            <div class="d-flex align-items-center gap-3">
+                                @if (diasAlimentacion == 0)
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill">¡Toca hoy!</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info text-white rounded-pill">En @diasAlimentacion días</span>
+                                }
+                                <form asp-controller="Alimentacion" asp-action="MarcarCompletada" method="post" class="m-0 p-0">
+                                    <input type="hidden" name="id" value="@alim.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-pill" title="Marcar como entregada y archivar">
+                                        <i class="bi bi-check2-circle"></i> Completar
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="list-group-item list-group-item-info d-flex justify-content-between align-items-center">
+                        <span><strong>Recordatorio:</strong> Todo en orden con la alimentación suplementaria.</span>
+                        <span class="badge bg-info text-dark rounded-pill">OK</span>
+                    </li>
+                }
+
+            </ul>
+            <div class="card-footer bg-light text-end">
+                <a asp-controller="Tratamientos" asp-action="Index" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-clock-history"></i> Ver Historial de Tratamientos (Archivo)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de navegación rápida -->
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-geo-alt-fill text-warning"></i> Apiarios</h5>
+                    <p class="card-text text-muted small">Gestión de geolocalización y capacidad de apiarios.</p>
+                </div>
+                <a href="/Apiarios" class="btn btn-warning w-100 mt-2">Ir a Apiarios</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-box-seam text-warning"></i> Colmenas</h5>
+                    <p class="card-text text-muted small">Registro individual y estado de la reina.</p>
+                </div>
+                <a href="/Colmenas" class="btn btn-warning w-100 mt-2">Ir a Colmenas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-danger h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-heart-pulse-fill text-danger"></i> Sanidad</h5>
+                    <p class="card-text text-muted small">Tratamientos, medicamentos y alertas.</p>
+                </div>
+                <a href="/Tratamientos" class="btn btn-outline-danger w-100 mt-2">Ver Tratamientos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-info h-100 bg-light">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-robot text-info"></i> Campo (IA)</h5>
+                    <p class="card-text text-muted small">Registro por voz y cámara en el apiario.</p>
+                </div>
+                <a href="/Inspeccion" class="btn btn-info text-white w-100 mt-2 fw-bold">Modo Inspección</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-success h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-basket-fill text-success"></i> Cosechas</h5>
+                    <p class="card-text text-muted small">Registro de extracción por lote.</p>
+                </div>
+                <a href="/Cosechas" class="btn btn-success w-100 mt-2">Gestionar Cosechas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-primary h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-droplet-fill text-primary"></i> Barriles (Exportación)</h5>
+                    <p class="card-text text-muted small">Trazabilidad de barriles de exportación (300kg).</p>
+                </div>
+                <a href="/Barriles" class="btn btn-primary w-100 mt-2">Ver Barriles</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Módulos de Base de Datos II -->
+<hr />
+<h5 class="text-muted mb-3"><i class="bi bi-database-fill"></i> Módulos Base de Datos II</h5>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-journal-text text-warning"></i> Inspecciones</h5>
+                    <p class="card-text text-muted small">Historial de inspecciones: estado de colmena, reina y población estimada.</p>
+                </div>
+                <a href="/Inspecciones" class="btn btn-warning w-100 mt-2">Ver Inspecciones</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-info h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="bi bi-calendar-event text-info"></i> Alimentación Suplementaria</h5>
+                    <p class="card-text text-muted small">Programación de alimentación por apiario: jarabe, candi, etc.</p>
+                </div>
+                <a href="/Alimentacion" class="btn btn-info text-white w-100 mt-2">Ver Alimentación</a>
+            </div>
+        </div>
+    </div>
+</div>

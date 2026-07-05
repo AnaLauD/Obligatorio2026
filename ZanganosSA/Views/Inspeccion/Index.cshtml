@@ -1,0 +1,921 @@
+<script src="https://cdn.jsdelivr.net/npm/@@tensorflow/tfjs@@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@@tensorflow-models/mobilenet@@2.1.0/dist/mobilenet.min.js"></script>
+
+<div class="container-fluid py-4 bg-dark text-light min-vh-100" style="background: radial-gradient(circle at top right, #1f2d3d, #0f172a) !important;">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 border-bottom border-secondary pb-4">
+            <div>
+                <h1 class="display-5 text-info fw-bold mb-1"><i class="bi bi-robot"></i> Asistente de Inspección Inteligente</h1>
+                <p class="text-muted lead mb-0">Sistema Manos Libres y Visión Computacional con Inteligencia Artificial para Apicultura.</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <a href="/" class="btn btn-outline-light rounded-pill px-4"><i class="bi bi-house-door-fill me-2"></i>Inicio</a>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout -->
+        <div class="row">
+            <!-- LEFT PANEL: Voice Control & Voice Logs -->
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-dark text-white border-0 shadow-lg rounded-4 overflow-hidden h-100" style="background: rgba(30, 41, 59, 0.7) !important; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+                    <div class="card-header bg-transparent border-bottom border-secondary py-3 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-info"><i class="bi bi-mic-fill me-2"></i>Asistente de Voz Manos Libres</h4>
+                        <span class="badge bg-success rounded-pill px-3 py-2" id="voiceStatusBadge">Listo para Dictar</span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <!-- Colmena Selector -->
+                        <div class="mb-4">
+                            <label for="colmenaSelect" class="form-label text-muted fw-bold small uppercase">Seleccionar Colmena Base:</label>
+                            <select id="colmenaSelect" class="form-select bg-secondary text-white border-secondary rounded-3">
+                                <option value="">Cargando colmenas...</option>
+                            </select>
+                        </div>
+
+                        <!-- Audio Wave Visualizer Area -->
+                        <div class="position-relative bg-black rounded-4 p-4 mb-4 d-flex flex-column align-items-center justify-content-center" style="height: 180px; border: 1px dashed rgba(255, 255, 255, 0.2);">
+                            <canvas id="waveformCanvas" class="w-100 position-absolute top-0 start-0 h-100 rounded-4" style="opacity: 0.85; pointer-events: none;"></canvas>
+                            
+                            <div class="text-center z-1">
+                                <button type="button" id="recordBtn" class="btn btn-danger btn-lg rounded-circle p-4 shadow-lg mb-3" style="width: 80px; height: 80px; transition: all 0.3s ease;">
+                                    <i class="bi bi-mic-fill fs-2" id="micIcon"></i>
+                                </button>
+                                <p class="small text-muted mb-0" id="micHint">Haz clic para activar el micrófono o usa los atajos rápidos abajo</p>
+                            </div>
+                        </div>
+
+                        <!-- Speech Output -->
+                        <div class="mb-4">
+                            <label class="form-label text-muted fw-bold small uppercase">Texto Transcrito por la IA:</label>
+                            <div class="bg-secondary bg-opacity-20 p-3 rounded-3 border border-secondary text-info fw-semibold" id="transcriptionText" style="min-height: 60px;">
+                                "Escuchando observaciones de campo..."
+                            </div>
+                        </div>
+
+                        <!-- Quick Simulator Presets -->
+                        <div class="mb-4">
+                            <label class="form-label text-muted fw-bold small uppercase">Presintonías de Voz (Simulación Rápida):</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-sm btn-outline-info rounded-pill voice-preset" data-text="Colmena 1 en estado critico y sin reina">
+                                    <i class="bi bi-virus me-1"></i> Colmena 1 Crítica
+                                </button>
+                                <button class="btn btn-sm btn-outline-info rounded-pill voice-preset" data-text="Colmena 4 en excelente estado con reina joven y activa">
+                                    <i class="bi bi-shield-check me-1"></i> Colmena 4 Excelente
+                                </button>
+                                <button class="btn btn-sm btn-outline-info rounded-pill voice-preset" data-text="Colmena 2 regular reina debil">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Colmena 2 Regular
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger rounded-pill voice-preset" data-text="Esta colmena de mierda no sirve para nada y está rota">
+                                    <i class="bi bi-shield-slash me-1"></i> [Prohibido] Dictar Grosería
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- DB Status Response Card -->
+                        <div class="card border-0 rounded-3 text-white p-3 d-none" id="responseCard">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3" id="responseIconContainer">
+                                    <i class="bi bi-check-circle-fill text-success fs-3" id="responseIcon"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 fw-bold" id="responseHeader">Actualización Realizada en Base de Datos</h6>
+                                    <p class="mb-0 small text-light" id="responseMessage"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Computer Vision Image / Camera Area -->
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-dark text-white border-0 shadow-lg rounded-4 overflow-hidden h-100" style="background: rgba(30, 41, 59, 0.7) !important; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+                    <div class="card-header bg-transparent border-bottom border-secondary py-3 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-warning"><i class="bi bi-camera-fill me-2"></i>Visión Computacional en Tiempo Real</h4>
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2" id="visionStatusBadge">Cámara Lista</span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <!-- Camera Viewport / Image Area -->
+                        <div class="position-relative bg-black rounded-4 overflow-hidden mb-4 d-flex align-items-center justify-content-center" style="height: 300px; border: 1px solid rgba(255, 255, 255, 0.15);">
+                            <!-- Scanner Laser Effect -->
+                            <div class="scanner-laser d-none" id="scannerLaser"></div>
+                            
+                            <!-- Main Preview Image -->
+                            <img id="visionImagePreview" src="/images/beehive_inspection.png" class="w-100 h-100 object-fit-cover" alt="Vista de Inspección" />
+                            
+                            <!-- Live Camera Video (if supported/activated) -->
+                            <video id="webcamVideo" class="w-100 h-100 object-fit-cover d-none" autoplay playsinline></video>
+
+                            <!-- Bounding Boxes Container -->
+                            <div class="position-absolute top-0 start-0 w-100 h-100" id="boundingBoxesContainer" style="pointer-events: none;"></div>
+                        </div>
+                        <!-- Camera Simulation Control Panel -->
+                        <div id="cameraSimulationControls" class="mb-4 d-none p-3 rounded-4 bg-secondary bg-opacity-10 border border-warning text-center">
+                            <label class="form-label text-warning fw-bold small uppercase d-block mb-2"><i class="bi bi-gear-fill me-1"></i>Simulador de Objeto Frente a Cámara:</label>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <button type="button" class="btn btn-sm btn-outline-warning active rounded-pill px-3 camera-sim-preset" data-preset="beehive_inspection">
+                                    <i class="bi bi-box-seam me-1"></i> Cajón Dañado (Madera)
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 camera-sim-preset" data-preset="healthy_honeycomb">
+                                    <i class="bi bi-grid-3x3-gap-fill me-1"></i> Panal Saludable
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 camera-sim-preset" data-preset="non_apiculture">
+                                    <i class="bi bi-x-circle-fill me-1"></i> Mano / Objeto Inválido
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Controls -->
+                        <div class="d-flex flex-wrap gap-2 justify-content-center mb-4">
+                            <button type="button" class="btn btn-outline-warning btn-md rounded-pill px-3" id="toggleWebcamBtn">
+                                <i class="bi bi-camera me-1"></i> Usar Cámara Real
+                            </button>
+                            <button type="button" class="btn btn-warning btn-md rounded-pill text-dark fw-bold px-4" id="analyzeBtn">
+                                <i class="bi bi-cpu-fill me-1"></i> Iniciar Escaneo IA
+                            </button>
+                        </div>
+
+                        <!-- Upload Custom Image Area -->
+                        <div class="mb-4 p-3 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-dashed text-center">
+                            <label class="form-label text-muted fw-bold small uppercase d-block mb-2">Subir Foto para Analizar:</label>
+                            <input type="file" id="customImageUpload" class="form-control bg-dark text-light border-secondary rounded-pill" accept="image/*" />
+                            <div class="text-muted small mt-1">Sube una foto de colmena/panal (o cualquier otra para probar el error de análisis)</div>
+                        </div>
+
+                        <!-- Image Presets Selector -->
+                        <div class="mb-4">
+                            <label class="form-label text-muted fw-bold small uppercase">Imágenes de Prueba (Simulador):</label>
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <div class="card bg-secondary bg-opacity-25 border border-warning rounded-3 p-2 cursor-pointer preset-img-card active" data-preset="beehive_inspection" data-src="/images/beehive_inspection.png" style="cursor: pointer; height: 110px;">
+                                        <img src="/images/beehive_inspection.png" class="w-100 rounded object-fit-cover" style="height: 50px;" />
+                                        <div class="text-center mt-1 small" style="font-size: 11px;">Cajón Viejo (Madera)</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card bg-secondary bg-opacity-25 border border-secondary rounded-3 p-2 cursor-pointer preset-img-card" data-preset="healthy_honeycomb" data-src="/images/healthy_honeycomb.png" style="cursor: pointer; height: 110px;">
+                                        <img src="/images/healthy_honeycomb.png" class="w-100 rounded object-fit-cover" style="height: 50px;" />
+                                        <div class="text-center mt-1 small" style="font-size: 11px;">Panal Saludable</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card bg-secondary bg-opacity-25 border border-secondary rounded-3 p-2 cursor-pointer preset-img-card" data-preset="non_apiculture" data-src="/images/unrelated_car.png" style="cursor: pointer; height: 110px;">
+                                        <img src="/images/unrelated_car.png" class="w-100 rounded object-fit-cover" style="height: 50px;" />
+                                        <div class="text-center mt-1 small text-danger" style="font-size: 11px; font-weight: bold;"><i class="bi bi-x-octagon"></i> Foto Invalida</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Vision Results Card -->
+                        <div class="card bg-secondary bg-opacity-20 border border-secondary rounded-3 p-3 d-none mb-3" id="visionResultCard">
+                            <h6 class="text-warning fw-bold border-bottom border-secondary pb-2 mb-2"><i class="bi bi-cpu-fill me-1"></i>Resultados del Análisis Visual IA</h6>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <span class="text-muted small">Estructura Detectada:</span>
+                                    <p class="fw-semibold mb-2" id="visionMaterialType">-</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small">Precisión:</span>
+                                    <p class="fw-semibold mb-2 text-success" id="visionConfidence">-</p>
+                                </div>
+                                <div class="col-12">
+                                    <span class="text-muted small">Diagnóstico / Condición de Mantenimiento:</span>
+                                    <p class="fw-semibold mb-0 text-info" id="visionCondition">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Vision Error Card -->
+                        <div class="card border-0 rounded-3 text-white p-3 d-none mb-3" id="visionErrorCard" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4) !important;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-danger fw-bold">Error de Análisis Visual</h6>
+                                    <p class="mb-0 small text-light" id="visionErrorMessage"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    .preset-img-card.active {
+        border-color: #ffc107 !important;
+        background-color: rgba(255, 193, 7, 0.15) !important;
+    }
+    /* Scanner line animation */
+    .scanner-laser {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, transparent, #ffc107, transparent);
+        box-shadow: 0 0 12px 3px #ffc107;
+        z-index: 5;
+        animation: scan 2s linear infinite;
+    }
+    @@keyframes scan {
+        0% { top: 0%; }
+        50% { top: 100%; }
+        100% { top: 0%; }
+    }
+    /* Bounding box animation styling */
+    .ai-bounding-box {
+        position: absolute;
+        border: 2px solid #22c55e;
+        background-color: rgba(34, 197, 94, 0.15);
+        color: #fff;
+        font-size: 11px;
+        font-weight: bold;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        animation: fadeIn 0.4s ease;
+    }
+    .ai-box-label {
+        position: absolute;
+        top: -18px;
+        left: -2px;
+        background-color: #22c55e;
+        padding: 0px 6px;
+        border-radius: 2px;
+        white-space: nowrap;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // --- DATA LOAD ---
+        const colmenaSelect = document.getElementById("colmenaSelect");
+        let currentColmenas = [];
+
+        function loadColmenas() {
+            fetch('/Inspeccion/GetColmenas')
+                .then(r => {
+                    if (!r.ok) throw new Error('Error HTTP: ' + r.status);
+                    return r.json();
+                })
+                .then(data => {
+                    currentColmenas = data;
+                    colmenaSelect.innerHTML = "";
+                    if (data.length === 0) {
+                        colmenaSelect.innerHTML = '<option value="">Sin colmenas registradas</option>';
+                        return;
+                    }
+                    data.forEach((c, index) => {
+                        const option = document.createElement("option");
+                        option.value = c.id;
+                        if (index === 0) option.selected = true;
+                        option.textContent = `Colmena #${c.id} (Identificador: ${c.identificador})`;
+                        colmenaSelect.appendChild(option);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error cargando colmenas:', err);
+                    colmenaSelect.innerHTML = '<option value="1">Error al cargar - usando colmena 1</option>';
+                });
+        }
+        loadColmenas();
+
+        // --- WEB SPEECH API (MICROPHONE & SYNTHESIS) ---
+        const recordBtn = document.getElementById("recordBtn");
+        const micIcon = document.getElementById("micIcon");
+        const micHint = document.getElementById("micHint");
+        const transcriptionText = document.getElementById("transcriptionText");
+        const responseCard = document.getElementById("responseCard");
+        const responseMessage = document.getElementById("responseMessage");
+        const responseHeader = document.getElementById("responseHeader");
+        const responseIcon = document.getElementById("responseIcon");
+        const voiceStatusBadge = document.getElementById("voiceStatusBadge");
+
+        let recognition;
+        let isRecording = false;
+
+        // TTS Reader helper
+        function speakFeedback(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRec();
+            recognition.continuous = false;
+            recognition.interimResults = true;  // Muestra texto mientras habás
+            recognition.maxAlternatives = 5;     // Toma más alternativas para mejor precisión
+            recognition.lang = 'es-UY';          // Español Uruguay (acento rioplatense)
+
+            recognition.onstart = function () {
+                isRecording = true;
+                recordBtn.classList.remove("btn-danger");
+                recordBtn.classList.add("btn-success");
+                recordBtn.style.transform = "scale(1.1)";
+                micIcon.className = "bi bi-record-fill";
+                micHint.textContent = "Grabando... Habla ahora (Ej: 'Colmena 4 regular')";
+                voiceStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                voiceStatusBadge.textContent = "Escuchando...";
+                transcriptionText.textContent = '"Escuchando..."';
+                startWaveform();
+            };
+
+            recognition.onerror = function (e) {
+                console.error("Speech Error:", e);
+                if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+                    transcriptionText.textContent = '"⚠️ Permiso de micrófono denegado. Habilita el micrófono en la barra de dirección del navegador."';
+                } else if (e.error === 'no-speech') {
+                    transcriptionText.textContent = '"No se detectó audio. Verifica que el micrófono esté conectado e intenta de nuevo."';
+                } else if (e.error === 'language-not-supported') {
+                    // Intentar con español argentino como fallback
+                    recognition.lang = 'es-AR';
+                    transcriptionText.textContent = '"Cambiando a español AR..."';
+                }
+                stopRecordingUI();
+            };
+
+            recognition.onend = function () {
+                stopRecordingUI();
+            };
+
+            recognition.onresult = function (event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (interimTranscript) {
+                    transcriptionText.innerHTML = `<em style="color:#94a3b8">(Escuchando: ${interimTranscript})</em>`;
+                }
+
+                if (finalTranscript) {
+                    transcriptionText.textContent = `"${finalTranscript}"`;
+                    sendSpeechToServer(finalTranscript);
+                }
+            };
+        } else {
+            micHint.textContent = "Reconocimiento de voz nativo no soportado. ¡Usa los botones rápidos de simulación!";
+        }
+
+        function stopRecordingUI() {
+            isRecording = false;
+            recordBtn.classList.add("btn-danger");
+            recordBtn.classList.remove("btn-success");
+            recordBtn.style.transform = "scale(1)";
+            micIcon.className = "bi bi-mic-fill";
+            micHint.textContent = "Haz clic para activar el micrófono o usa los atajos rápidos abajo";
+            voiceStatusBadge.className = "badge bg-success rounded-pill px-3 py-2";
+            voiceStatusBadge.textContent = "Listo para Dictar";
+            stopWaveform();
+        }
+
+        recordBtn.addEventListener("click", function () {
+            if (!recognition) {
+                alert("El reconocimiento de voz nativo no está disponible. Usa los botones simuladores.");
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+
+        // Click presets (voice simulations)
+        document.querySelectorAll(".voice-preset").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const text = this.getAttribute("data-text");
+                transcriptionText.textContent = `"${text}"`;
+                speakFeedback("Procesando dictado");
+                // Animate waveform briefly
+                startWaveform();
+                setTimeout(() => {
+                    stopWaveform();
+                    sendSpeechToServer(text);
+                }, 1500);
+            });
+        });
+
+        function sendSpeechToServer(text) {
+            const colId = colmenaSelect.value || 1;
+            fetch('/Inspeccion/ProcesarVoz', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ colmenaId: parseInt(colId), texto: text })
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Error HTTP: ' + r.status);
+                return r.json();
+            })
+            .then(data => {
+                responseCard.classList.remove("d-none");
+                if (data.success) {
+                    responseCard.style.background = "rgba(16, 185, 129, 0.15)";
+                    responseCard.style.border = "1px solid rgba(16, 185, 129, 0.4)";
+                    responseHeader.textContent = "Actualización Realizada en Base de Datos";
+                    responseHeader.className = "mb-1 text-success fw-bold";
+                    responseIcon.className = "bi bi-check-circle-fill text-success fs-3";
+                    responseMessage.innerHTML = `${data.mensaje} <br/><strong>Estado General:</strong> ${data.estadoGeneral} | <strong>Reina:</strong> ${data.estadoReina}`;
+                    speakFeedback(`Base de datos actualizada. Colmena ${data.colmenaId}.`);
+                    loadColmenas();
+                } else {
+                    responseCard.style.background = "rgba(239, 68, 68, 0.15)";
+                    responseCard.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+                    responseHeader.textContent = "Dictado Rechazado";
+                    responseHeader.className = "mb-1 text-danger fw-bold";
+                    responseIcon.className = "bi bi-exclamation-triangle-fill text-danger fs-3";
+                    responseMessage.innerHTML = data.message;
+                    speakFeedback("Error, dictado inapropiado detectado.");
+                }
+            })
+            .catch(err => {
+                console.error('Error en ProcesarVoz:', err);
+                responseCard.classList.remove("d-none");
+                responseCard.style.background = "rgba(239, 68, 68, 0.15)";
+                responseCard.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+                responseHeader.textContent = "Error de Conexión";
+                responseHeader.className = "mb-1 text-danger fw-bold";
+                responseIcon.className = "bi bi-wifi-off text-danger fs-3";
+                responseMessage.innerHTML = `No se pudo conectar al servidor: ${err.message}`;
+            });
+        }
+
+
+        // --- AUDIO WAVEFORM CANVAS ANIMATION ---
+        const canvas = document.getElementById("waveformCanvas");
+        const ctx = canvas.getContext("2d");
+        let waveAnimId;
+        let phase = 0;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        function drawWave() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "rgba(13, 202, 240, 0.4)";
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x++) {
+                const y = canvas.height / 2 + Math.sin(x * 0.03 + phase) * 20 * Math.sin(x * 0.005);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = "rgba(220, 53, 69, 0.6)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x++) {
+                const y = canvas.height / 2 + Math.sin(x * 0.05 - phase) * 15 * Math.cos(x * 0.01);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            phase += 0.15;
+            waveAnimId = requestAnimationFrame(drawWave);
+        }
+
+        function startWaveform() {
+            cancelAnimationFrame(waveAnimId);
+            drawWave();
+        }
+
+        function stopWaveform() {
+            cancelAnimationFrame(waveAnimId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+
+        // --- VISION SYSTEM (IMAGE PRESETS, SCANNER, BOUNDING BOXES) ---
+        const visionImagePreview = document.getElementById("visionImagePreview");
+        const webcamVideo = document.getElementById("webcamVideo");
+        const toggleWebcamBtn = document.getElementById("toggleWebcamBtn");
+        const analyzeBtn = document.getElementById("analyzeBtn");
+        const scannerLaser = document.getElementById("scannerLaser");
+        const boundingBoxesContainer = document.getElementById("boundingBoxesContainer");
+        const visionResultCard = document.getElementById("visionResultCard");
+        const visionErrorCard = document.getElementById("visionErrorCard");
+        const visionErrorMessage = document.getElementById("visionErrorMessage");
+        const visionStatusBadge = document.getElementById("visionStatusBadge");
+        const customImageUpload = document.getElementById("customImageUpload");
+        const cameraSimulationControls = document.getElementById("cameraSimulationControls");
+
+        // Bind camera simulation controls
+        document.querySelectorAll(".camera-sim-preset").forEach(btn => {
+            btn.addEventListener("click", function () {
+                document.querySelectorAll(".camera-sim-preset").forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                activePreset = this.getAttribute("data-preset");
+            });
+        });
+
+        const visionMaterialType = document.getElementById("visionMaterialType");
+        const visionConfidence = document.getElementById("visionConfidence");
+        const visionCondition = document.getElementById("visionCondition");
+
+        let activePreset = "beehive_inspection";
+        let uploadedFileName = "";
+        let localStream = null;
+
+        // --- TENSORFLOW.JS MOBILENET INITIALIZATION ---
+        let tfModel = null;
+        let isModelLoading = false;
+
+        async function loadVisionModel() {
+            if (tfModel) return tfModel;
+            if (isModelLoading) {
+                while (isModelLoading) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                return tfModel;
+            }
+            
+            isModelLoading = true;
+            visionStatusBadge.className = "badge bg-info text-dark rounded-pill px-3 py-2";
+            visionStatusBadge.textContent = "Cargando IA...";
+            
+            try {
+                tfModel = await mobilenet.load();
+                visionStatusBadge.className = "badge bg-success rounded-pill px-3 py-2";
+                visionStatusBadge.textContent = "IA Lista";
+            } catch (err) {
+                console.error("Error cargando TensorFlow.js MobileNet:", err);
+                visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                visionStatusBadge.textContent = "Error de IA";
+            } finally {
+                isModelLoading = false;
+            }
+            return tfModel;
+        }
+
+        // Cargar modelo al iniciar en background
+        setTimeout(loadVisionModel, 500);
+
+        // Toggle presets
+        document.querySelectorAll(".preset-img-card").forEach(card => {
+            card.addEventListener("click", function () {
+                document.querySelectorAll(".preset-img-card").forEach(c => c.classList.remove("active"));
+                this.classList.add("active");
+                activePreset = this.getAttribute("data-preset");
+                uploadedFileName = "";
+                customImageUpload.value = ""; // Clear custom file selection
+                
+                // Show preset image
+                visionImagePreview.src = this.getAttribute("data-src");
+                visionImagePreview.classList.remove("d-none");
+                webcamVideo.classList.add("d-none");
+                
+                // Reset bounding boxes and camera
+                clearBoundingBoxes();
+                visionResultCard.classList.add("d-none");
+                visionErrorCard.classList.add("d-none");
+                stopWebcam();
+            });
+        });
+
+        // Custom File Upload Change
+        customImageUpload.addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Set active preset to custom
+                document.querySelectorAll(".preset-img-card").forEach(c => c.classList.remove("active"));
+                activePreset = "custom_upload";
+                uploadedFileName = file.name;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    visionImagePreview.src = event.target.result;
+                    visionImagePreview.classList.remove("d-none");
+                    webcamVideo.classList.add("d-none");
+                    clearBoundingBoxes();
+                    visionResultCard.classList.add("d-none");
+                    visionErrorCard.classList.add("d-none");
+                    stopWebcam();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearBoundingBoxes() {
+            boundingBoxesContainer.innerHTML = "";
+        }
+
+        function stopWebcam() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            toggleWebcamBtn.innerHTML = '<i class="bi bi-camera me-1"></i> Usar Cámara Real';
+            toggleWebcamBtn.classList.remove("btn-danger");
+            toggleWebcamBtn.classList.add("btn-outline-warning");
+            visionStatusBadge.className = "badge bg-warning text-dark rounded-pill px-3 py-2";
+            visionStatusBadge.textContent = "Cámara Lista";
+            cameraSimulationControls.classList.add("d-none");
+        }
+
+        // Real webcam support
+        toggleWebcamBtn.addEventListener("click", async function () {
+            if (localStream) {
+                stopWebcam();
+                visionImagePreview.classList.remove("d-none");
+                webcamVideo.classList.add("d-none");
+            } else {
+                try {
+                    visionStatusBadge.className = "badge bg-secondary rounded-pill px-3 py-2";
+                    visionStatusBadge.textContent = "Solicitando permiso...";
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    localStream = stream;
+                    webcamVideo.srcObject = stream;
+                    webcamVideo.classList.remove("d-none");
+                    visionImagePreview.classList.add("d-none");
+                    toggleWebcamBtn.innerHTML = '<i class="bi bi-camera-video-off me-1"></i> Detener Cámara';
+                    toggleWebcamBtn.classList.remove("btn-outline-warning");
+                    toggleWebcamBtn.classList.add("btn-danger");
+                    visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                    visionStatusBadge.textContent = "Transmisión en Vivo";
+                    clearBoundingBoxes();
+                    visionResultCard.classList.add("d-none");
+                    visionErrorCard.classList.add("d-none");
+
+                    // Show simulation controls and default to real_camera (no preset active unless manually clicked)
+                    cameraSimulationControls.classList.remove("d-none");
+                    document.querySelectorAll(".camera-sim-preset").forEach(b => b.classList.remove("active"));
+                    activePreset = "real_camera";
+                    uploadedFileName = "";
+                } catch (err) {
+                    visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                    visionStatusBadge.textContent = "Error de permiso";
+                    console.error(err);
+                    // Mostrar error claro en el card de error
+                    visionErrorCard.classList.remove("d-none");
+                    visionResultCard.classList.add("d-none");
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        visionErrorMessage.innerHTML = '⚠️ <strong>Permiso de cámara denegado.</strong> Haz clic en el 🔒 o la cámara en la barra de dirección del navegador y selecciona <strong>"Permitir"</strong>, luego intenta de nuevo.';
+                    } else if (err.name === 'NotFoundError') {
+                        visionErrorMessage.innerHTML = '⚠️ <strong>No se encontró ninguna cámara.</strong> Verifica que tu cámara esté conectada y no esté siendo usada por otra aplicación.';
+                    } else {
+                        visionErrorMessage.innerHTML = `⚠️ <strong>Error al acceder a la cámara:</strong> ${err.message}. Verifica los permisos en la configuración del navegador.`;
+                    }
+                }
+            }
+        });
+
+
+        // AI Scan
+        analyzeBtn.addEventListener("click", function () {
+            clearBoundingBoxes();
+            visionResultCard.classList.add("d-none");
+            visionErrorCard.classList.add("d-none");
+            
+            let base64 = "";
+            let elementToClassify = null;
+
+            if (localStream) {
+                // Capture frame from video
+                const tempCanvas = document.createElement("canvas");
+                tempCanvas.width = webcamVideo.videoWidth || 640;
+                tempCanvas.height = webcamVideo.videoHeight || 480;
+                const tempCtx = tempCanvas.getContext("2d");
+                tempCtx.drawImage(webcamVideo, 0, 0, tempCanvas.width, tempCanvas.height);
+                base64 = tempCanvas.toDataURL("image/png");
+                
+                // Show captured frame in preview
+                visionImagePreview.src = base64;
+                visionImagePreview.classList.remove("d-none");
+                webcamVideo.classList.add("d-none");
+                stopWebcam();
+
+                elementToClassify = tempCanvas;
+            } else {
+                elementToClassify = visionImagePreview;
+            }
+
+            // If it's a real camera capture or a custom upload, run TensorFlow.js classification
+            if (activePreset === "real_camera" || activePreset === "custom_upload") {
+                scannerLaser.classList.remove("d-none");
+                speakFeedback("Escaneando material");
+                visionStatusBadge.className = "badge bg-info text-dark rounded-pill px-3 py-2";
+                visionStatusBadge.textContent = "Clasificando con IA...";
+
+                setTimeout(async () => {
+                    const model = await loadVisionModel();
+                    if (!model) {
+                        scannerLaser.classList.add("d-none");
+                        visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                        visionStatusBadge.textContent = "Error de IA";
+                        visionErrorCard.classList.remove("d-none");
+                        visionErrorMessage.textContent = "No se pudo cargar el modelo de visión inteligente local.";
+                        speakFeedback("Error, modelo de visión no disponible.");
+                        return;
+                    }
+
+                    try {
+                        const predictions = await model.classify(elementToClassify);
+                        console.log("Predictions:", predictions);
+
+                        // Whitelist of keywords suggesting beehive, honeycomb, wood/box structure
+                        const whitelist = [
+                            "beehive", "honeycomb", "bee", "wasp", "nest", "apiary",
+                            "crate", "box", "chest", "coffin", "casket", "wood", "lumber", "plank",
+                            "board", "structure", "mailbox", "cabinet", "drawer", "case", "container"
+                        ];
+
+                        // Blacklist to reject faces/hands/etc.
+                        const blacklist = [
+                            "person", "man", "woman", "boy", "girl", "human", "face", "chin", "cheek",
+                            "neck", "mouth", "nose", "ear", "hair", "finger", "hand", "arm", "leg", "foot",
+                            "groom", "suit", "t-shirt", "shirt", "clothing", "dress", "sweater", "jacket", "jeans", "pants",
+                            "laptop", "computer", "keyboard", "mouse", "screen", "monitor", "cellular telephone", "handphone", "telephone",
+                            "car", "automobile", "vehicle", "truck", "bus", "bicycle", "motorcycle"
+                        ];
+
+                        let isValid = false;
+                        let detectedLabel = "";
+                        let detectedConfidence = 0;
+                        let reason = "";
+
+                        const topPred = predictions[0];
+                        if (topPred) {
+                            detectedLabel = topPred.className.toLowerCase();
+                            detectedConfidence = topPred.probability;
+
+                            const isBlacklisted = blacklist.some(word => detectedLabel.includes(word));
+                            const isWhitelisted = whitelist.some(word => detectedLabel.includes(word)) ||
+                                                  predictions.slice(0, 3).some(p => whitelist.some(w => p.className.toLowerCase().includes(w)));
+
+                            if (isBlacklisted) {
+                                isValid = false;
+                                reason = `Se detectó un elemento no relacionado: "${topPred.className}".`;
+                            } else if (isWhitelisted) {
+                                isValid = true;
+                            } else {
+                                isValid = false;
+                                reason = `No se reconoce una colmena o panal. Objeto detectado: "${topPred.className}".`;
+                            }
+                        } else {
+                            isValid = false;
+                            reason = "No se pudo identificar ningún objeto en la imagen.";
+                        }
+
+                        if (!isValid) {
+                            scannerLaser.classList.add("d-none");
+                            visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                            visionStatusBadge.textContent = "Imagen Rechazada";
+                            visionErrorCard.classList.remove("d-none");
+                            visionErrorMessage.innerHTML = `Error de análisis: La imagen no corresponde a un panal, colmena o elemento relacionado con la apicultura.<br/><strong>Detalle de la IA:</strong> ${reason} (Confianza: ${(detectedConfidence * 100).toFixed(0)}%)`;
+                            speakFeedback("Error, objeto no apícola detectado.");
+                            return;
+                        }
+
+                        // Send details to server
+                        fetch('/Inspeccion/ProcesarVision', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                preset: activePreset, 
+                                fileName: uploadedFileName, 
+                                base64Image: base64,
+                                detectedLabel: topPred.className,
+                                detectedConfidence: detectedConfidence
+                            })
+                        })
+                        .then(r => {
+                            if (!r.ok) throw new Error('Error HTTP: ' + r.status);
+                            return r.json();
+                        })
+                        .then(data => {
+                            scannerLaser.classList.add("d-none");
+                            if (data.success) {
+                                visionStatusBadge.className = "badge bg-success rounded-pill px-3 py-2";
+                                visionStatusBadge.textContent = "Análisis Exitoso";
+                                visionResultCard.classList.remove("d-none");
+                                visionMaterialType.textContent = data.tipoMaterial;
+                                visionConfidence.textContent = `${(data.nivelConfianza * 100).toFixed(0)}%`;
+                                visionCondition.textContent = data.condicion;
+                                speakFeedback(`Escaneo completado. Detectado ${data.tipoMaterial}`);
+                                data.boundingBoxes.forEach(box => {
+                                    const boxEl = document.createElement("div");
+                                    boxEl.className = "ai-bounding-box";
+                                    boxEl.style.left = `${box.x}px`;
+                                    boxEl.style.top = `${box.y}px`;
+                                    boxEl.style.width = `${box.w}px`;
+                                    boxEl.style.height = `${box.h}px`;
+                                    const labelEl = document.createElement("span");
+                                    labelEl.className = "ai-box-label";
+                                    labelEl.textContent = `${box.label} (${(box.confidence * 100).toFixed(0)}%)`;
+                                    boxEl.appendChild(labelEl);
+                                    boundingBoxesContainer.appendChild(boxEl);
+                                });
+                            } else {
+                                visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                                visionStatusBadge.textContent = "Error de Servidor";
+                                visionErrorCard.classList.remove("d-none");
+                                visionErrorMessage.textContent = data.message;
+                                speakFeedback("Error de análisis.");
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error en ProcesarVision:', err);
+                            scannerLaser.classList.add("d-none");
+                            visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                            visionStatusBadge.textContent = "Error de Conexión";
+                            visionErrorCard.classList.remove("d-none");
+                            visionErrorMessage.innerHTML = `⚠️ <strong>Error de conexión:</strong> ${err.message}. Asegurate de estar en <strong>https://localhost:7017</strong>`;
+                        });
+
+                    } catch (classifyErr) {
+                        console.error("Error classifying image:", classifyErr);
+                        scannerLaser.classList.add("d-none");
+                        visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                        visionStatusBadge.textContent = "Error en Clasificación";
+                        visionErrorCard.classList.remove("d-none");
+                        visionErrorMessage.textContent = "Hubo un error al ejecutar la clasificación con la IA de visión.";
+                        speakFeedback("Error interno de la IA.");
+                    }
+                }, 1500);
+            } else {
+                // Preset simulation
+                scannerLaser.classList.remove("d-none");
+                speakFeedback("Escaneando material");
+                visionStatusBadge.className = "badge bg-info text-dark rounded-pill px-3 py-2";
+                visionStatusBadge.textContent = "Analizando preset...";
+
+                fetch('/Inspeccion/ProcesarVision', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ preset: activePreset, fileName: uploadedFileName, base64Image: base64 })
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error('Error HTTP: ' + r.status);
+                    return r.json();
+                })
+                .then(data => {
+                    setTimeout(() => {
+                        scannerLaser.classList.add("d-none");
+                        if (data.success) {
+                            visionStatusBadge.className = "badge bg-success rounded-pill px-3 py-2";
+                            visionStatusBadge.textContent = "Análisis Exitoso";
+                            visionResultCard.classList.remove("d-none");
+                            visionMaterialType.textContent = data.tipoMaterial;
+                            visionConfidence.textContent = `${(data.nivelConfianza * 100).toFixed(0)}%`;
+                            visionCondition.textContent = data.condicion;
+                            speakFeedback(`Escaneo completado. Detectado ${data.tipoMaterial}`);
+                            data.boundingBoxes.forEach(box => {
+                                const boxEl = document.createElement("div");
+                                boxEl.className = "ai-bounding-box";
+                                boxEl.style.left = `${box.x}px`;
+                                boxEl.style.top = `${box.y}px`;
+                                boxEl.style.width = `${box.w}px`;
+                                boxEl.style.height = `${box.h}px`;
+                                const labelEl = document.createElement("span");
+                                labelEl.className = "ai-box-label";
+                                labelEl.textContent = `${box.label} (${(box.confidence * 100).toFixed(0)}%)`;
+                                boxEl.appendChild(labelEl);
+                                boundingBoxesContainer.appendChild(boxEl);
+                            });
+                        } else {
+                            visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                            visionStatusBadge.textContent = "Imagen Rechazada";
+                            visionErrorCard.classList.remove("d-none");
+                            visionErrorMessage.textContent = data.message;
+                            speakFeedback("Error de análisis.");
+                        }
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Error en ProcesarVision:', err);
+                    scannerLaser.classList.add("d-none");
+                    visionStatusBadge.className = "badge bg-danger rounded-pill px-3 py-2";
+                    visionStatusBadge.textContent = "Error de Conexión";
+                    visionErrorCard.classList.remove("d-none");
+                    visionErrorMessage.innerHTML = `⚠️ <strong>Error de conexión:</strong> ${err.message}. Asegurate de estar en <strong>https://localhost:7017</strong>`;
+                });
+            }
+        });
+    });
+</script>

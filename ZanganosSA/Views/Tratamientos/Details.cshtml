@@ -1,0 +1,52 @@
+@model ZanganosSA.Models.Tratamiento
+
+@{
+    ViewData["Title"] = "Detalles del Tratamiento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4"><i class="bi bi-eye text-warning"></i> Detalles del Tratamiento</h2>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Id Tratamiento</dt>
+                <dd class="col-sm-8">#@Model.Id</dd>
+                <dt class="col-sm-4 fw-bold">Medicamento</dt>
+                <dd class="col-sm-8">@Model.Medicamento</dd>
+                <dt class="col-sm-4 fw-bold">Dosis</dt>
+                <dd class="col-sm-8">@Model.Dosis</dd>
+                <dt class="col-sm-4 fw-bold">Fecha de Inicio</dt>
+                <dd class="col-sm-8">@Model.FechaInicio.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4 fw-bold">Fecha de Fin</dt>
+                <dd class="col-sm-8">@Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4 fw-bold">Duración</dt>
+                <dd class="col-sm-8">@(Model.DuracionDias.HasValue ? $"{Model.DuracionDias} días" : "N/A")</dd>
+                <dt class="col-sm-4 fw-bold">Colmenas a las que se aplica</dt>
+                <dd class="col-sm-8">
+                    @if (Model.ColmenaTratamientos.Any())
+                    {
+                        <ul class="list-unstyled mb-0">
+                            @foreach (var ct in Model.ColmenaTratamientos)
+                            {
+                                <li>
+                                    <a asp-controller="Colmenas" asp-action="Details" asp-route-id="@ct.ColmenaId" class="text-danger fw-bold">
+                                        Colmena #@ct.ColmenaId
+                                    </a>
+                                    <span class="text-muted small"> (Fecha Aplicación: @ct.FechaAplicacion.ToString("dd/MM/yyyy"))</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Ninguna colmena asociada</span>
+                    }
+                </dd>
+            </dl>
+            <div class="d-flex gap-2 mt-3">
+                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning fw-bold"><i class="bi bi-pencil"></i> Editar</a>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>
